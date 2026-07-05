@@ -1,0 +1,111 @@
+\documentclass[12pt,a4paper,violet,openany]{bbe}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.5em}
+
+\usepackage{fontspec}
+\IfFontExistsTF{Roboto Bold}{
+    \setmainfont{Roboto}[
+        BoldFont = {Roboto Bold},
+        ItalicFont = {Roboto Italic},
+        BoldItalicFont = {Roboto Bold Italic}
+    ]
+    \setsansfont{Roboto}[
+        BoldFont = {Roboto Bold},
+        ItalicFont = {Roboto Italic},
+        BoldItalicFont = {Roboto Bold Italic}
+    ]
+}{
+    \setmainfont{Arial}
+    \setsansfont{Arial}
+}
+\renewcommand{\familydefault}{\sfdefault}
+
+\usepackage[spanish]{babel}
+\addto\captionsspanish{\renewcommand{\tablename}{Tabla}}
+\decimalpoint
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+
+\title{Taller practico SIPREH}
+\authors{Grupo de Investigaci\'on en Ingenier\'ia de los Recursos H\'idricos --- GIREH\\Facultad de Ingenier\'ia, Universidad Nacional de Colombia}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{Objetivo del taller}
+Aplicar SIPREH en un caso operativo corto para interpretar sequ\'ia hidrol\'ogica por estaci\'on, contrastar \i ndices en un periodo dado y sustentar una recomendaci\'on con evidencia gr\'afica exportada.
+
+\section{Estructura de la sesi\'on (40 min)}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.70\textwidth} >{\raggedright\arraybackslash}p{0.20\textwidth}}
+\toprule
+\textbf{Actividad} & \textbf{Tiempo} \\
+\midrule
+Caso 1: Diagn\'ostico de sequ\'ia hidrol\'ogica en estaci\'on X & 12 min \\
+Caso 2: Comparaci\'on de \i ndices en la misma estaci\'on & 12 min \\
+Caso 3: Evoluci\'on temporal y decisi\'on operativa & 12 min \\
+Cierre: s\'intesis y reporte express & 4 min \\
+\bottomrule
+\end{tabular}
+
+\section{Ficha diligenciable por cada caso}
+\begin{enumerate}[leftmargin=*,label=\arabic*.]
+    \item Estaci\'on:
+    \item Periodo analizado:
+    \item \'Indices consultados:
+    \item Hallazgo principal:
+    \item Evidencia gr\'afica exportada:
+    \item Severidad interpretada:
+    \item Decisi\'on operativa sugerida:
+\end{enumerate}
+
+\section{Banco de preguntas por caso}
+
+\subsection{Caso 1: Diagn\'ostico en estaci\'on X}
+\begin{enumerate}[leftmargin=*,label=\arabic*.]
+    \item Para la estaci\'on X, entre fecha A y fecha B, \textquestiondown qu\'e valores presenta SDI-3 y en qu\'e meses alcanza m\'inimos?
+    \item En ese mismo periodo, \textquestiondown SRI-6 confirma el mismo episodio de sequ\'ia o muestra diferencias?
+    \item \textquestiondown Cu\'antos meses consecutivos en condici\'on seca aparecen en la serie?
+    \item \textquestiondown Cu\'al fue el mes m\'as cr\'itico y qu\'e valor de \i ndice registr\'o?
+    \item Seg\'un la gr\'afica, \textquestiondown la estaci\'on muestra recuperaci\'on al final del periodo?
+\end{enumerate}
+
+\subsection{Caso 2: Comparaci\'on de \i ndices en la misma estaci\'on}
+\begin{enumerate}[leftmargin=*,label=\arabic*.]
+    \item Para estaci\'on X y periodo A-B, \textquestiondown qu\'e diferencia hay entre SDI-3 y SDI-12 en intensidad y duraci\'on?
+    \item \textquestiondown Cu\'al \i ndice detecta primero el inicio del evento seco?
+    \item \textquestiondown Cu\'al \i ndice mantiene m\'as tiempo la se\~nal de sequ\'ia?
+    \item \textquestiondown HDI coincide con SDI/SRI en la clasificaci\'on del evento?
+    \item Si hay discrepancias, \textquestiondown cu\'al \i ndice tomar\'ias como principal y por qu\'e?
+\end{enumerate}
+
+\subsection{Caso 3: Evoluci\'on temporal para decisi\'on}
+\begin{enumerate}[leftmargin=*,label=\arabic*.]
+    \item Comparando periodos P1 vs P2 en estaci\'on X, \textquestiondown en cu\'al hubo mayor severidad hidrol\'ogica?
+    \item \textquestiondown El evento m\'as cr\'itico fue puntual o prolongado?
+    \item \textquestiondown La tendencia reciente sugiere agravamiento o recuperaci\'on?
+    \item \textquestiondown Qu\'e incertidumbre observas en la interpretaci\'on de la serie?
+    \item Con base en la evidencia, \textquestiondown qu\'e nivel de alerta propones para las pr\'oximas 4 semanas?
+\end{enumerate}
+
+\section{Preguntas obligatorias sobre salida gr\'afica}
+\begin{enumerate}[leftmargin=*,label=\arabic*.]
+    \item \textquestiondown Qu\'e gr\'afica exportaste como evidencia principal?
+    \item \textquestiondown Qu\'e parte exacta de la gr\'afica sustenta tu conclusi\'on?
+    \item \textquestiondown Qu\'e mensaje t\'ecnico de 2 l\'ineas acompa\~na la figura?
+    \item \textquestiondown Qu\'e limitaci\'on de la gr\'afica debe declararse en el reporte?
+\end{enumerate}
+
+\section{Formato de respuesta por grupo (1 minuto)}
+\begin{enumerate}[leftmargin=*,label=\arabic*.]
+    \item Estaci\'on y periodo analizado.
+    \item \'Indice principal usado.
+    \item Hallazgo cuantitativo clave.
+    \item Decisi\'on operativa recomendada.
+    \item Evidencia gr\'afica seleccionada.
+\end{enumerate}
+
+\end{document}
