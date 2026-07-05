@@ -7,21 +7,29 @@ import { useTheme } from "@/contexts/ThemeContext";
 
 const BP = process.env.NEXT_PUBLIC_BASE_PATH || '';
 
+// width/height reflejan las dimensiones intrínsecas reales de cada PNG para que
+// el aspect ratio declarado coincida con el render (h-9 w-auto) y Next no avise.
 const ENTITY_LOGOS = [
   {
     src: `${BP}/logos/entidad1.png`,
     alt: "Agencia Atenea",
     href: "https://www.agenciaatenea.gov.co/",
+    width: 948,
+    height: 208,
   },
   {
     src: `${BP}/logos/entidad2.png`,
     alt: "Universidad Nacional de Colombia",
     href: "https://bogota.unal.edu.co/",
+    width: 207,
+    height: 102,
   },
   {
     src: `${BP}/logos/entidad3.png`,
     alt: "Grupo de Investigación HERMES",
     href: "http://www.hermes.unal.edu.co/pages/Consultas/Grupo.xhtml?idGrupo=236&opcion=1",
+    width: 918,
+    height: 216,
   },
 ];
 
@@ -104,8 +112,9 @@ export default function Header() {
                     <Image
                       src={logo.src}
                       alt={logo.alt}
-                      width={36}
-                      height={36}
+                      width={logo.width}
+                      height={logo.height}
+                      loading="eager"
                       unoptimized
                       className="h-9 w-auto object-contain p-1 rounded-lg hover:scale-110 transition-transform duration-300"
                     />

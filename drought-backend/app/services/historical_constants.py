@@ -38,11 +38,21 @@ SOURCE_BY_DATA_SOURCE = {
 # PDSI en CHIRPS usa SAT_LSCDF (no SAT_RAW como el resto de variables CHIRPS).
 # Temperatura (tmean/tmin/tmax) en IMERG está bajo SAT_RAW, no SAT_LSCDF
 # (SAT_LSCDF es la fuente de precipitación de IMERG; la temperatura no se almacena ahí).
+# ERA5_LAND: la temperatura (tmean/tmin/tmax) y todos los índices EXCEPTO EDDI
+# usan SAT_RAW. EDDI conserva PET_HARGREAVES (vía SOURCE_BY_INDEX); precip/balance
+# conservan el default del dataset (OBS_INTERP) y pet conserva PET_HARGREAVES.
 SOURCE_BY_VAR_AND_DS: dict = {
     ("PDSI", "CHIRPS"): "SAT_LSCDF",
     ("tmean", "IMERG"): "SAT_RAW",
     ("tmin", "IMERG"): "SAT_RAW",
     ("tmax", "IMERG"): "SAT_RAW",
+    ("tmean", "ERA5_LAND"): "SAT_RAW",
+    ("tmin", "ERA5_LAND"): "SAT_RAW",
+    ("tmax", "ERA5_LAND"): "SAT_RAW",
+    ("SPI", "ERA5_LAND"): "SAT_RAW",
+    ("SPEI", "ERA5_LAND"): "SAT_RAW",
+    ("RAI", "ERA5_LAND"): "SAT_RAW",
+    ("PDSI", "ERA5_LAND"): "SAT_RAW",
 }
 
 # Índices de sequía que NO usan la columna 'scale' como filtro.

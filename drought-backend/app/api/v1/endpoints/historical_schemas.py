@@ -160,7 +160,7 @@ class WatershedSpatialRequest(BaseModel):
     """Request para datos espaciales agregados por cuenca."""
     parquet_file_id: int = Field(..., description="ID del archivo parquet")
     variable: str = Field(..., description="Variable o índice")
-    data_source: str = Field(..., description="Fuente de datos: ERA5, IMERG o CHIRPS")
+    data_source: str = Field(..., description="Fuente de datos: ERA5, ERA5_LAND, IMERG o CHIRPS")
     target_date: Optional[date] = Field(None, description="Fecha objetivo (modo fecha única)")
     start_date: Optional[date] = Field(None, description="Fecha inicial (modo intervalo)")
     end_date: Optional[date] = Field(None, description="Fecha final (modo intervalo)")
@@ -196,7 +196,7 @@ class WatershedTimeSeriesRequest(BaseModel):
     """Request para serie de tiempo de una cuenca."""
     parquet_file_id: int = Field(..., description="ID del archivo parquet")
     variable: str = Field(..., description="Variable o índice")
-    data_source: str = Field(..., description="Fuente de datos: ERA5, IMERG o CHIRPS")
+    data_source: str = Field(..., description="Fuente de datos: ERA5, ERA5_LAND, IMERG o CHIRPS")
     cuenca_dn: int = Field(..., description="DN de la zona (cuenca 1-7; municipio/perimetro = 1)")
     start_date: date = Field(..., description="Fecha inicial")
     end_date: date = Field(..., description="Fecha final")

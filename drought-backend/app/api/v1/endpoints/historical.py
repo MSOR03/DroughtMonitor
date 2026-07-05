@@ -881,8 +881,8 @@ def get_watershed_spatial(
     elif not request.target_date:
         raise HTTPException(status_code=400, detail="En modo fecha única debes enviar target_date")
 
-    if request.data_source.upper() not in ("ERA5", "IMERG", "CHIRPS"):
-        raise HTTPException(status_code=400, detail="data_source debe ser ERA5, IMERG o CHIRPS")
+    if request.data_source.upper() not in ("ERA5", "ERA5_LAND", "IMERG", "CHIRPS"):
+        raise HTTPException(status_code=400, detail="data_source debe ser ERA5, ERA5_LAND, IMERG o CHIRPS")
     if request.zone_type not in ("cuenca", "municipio", "perimetro"):
         raise HTTPException(status_code=400, detail="zone_type debe ser cuenca, municipio o perimetro")
 
@@ -946,8 +946,8 @@ def get_watershed_timeseries(
     """
     logger.info(f"POST /watershed/timeseries - file={request.parquet_file_id} var={request.variable} src={request.data_source} dn={request.cuenca_dn}")
 
-    if request.data_source.upper() not in ("ERA5", "IMERG", "CHIRPS"):
-        raise HTTPException(status_code=400, detail="data_source debe ser ERA5, IMERG o CHIRPS")
+    if request.data_source.upper() not in ("ERA5", "ERA5_LAND", "IMERG", "CHIRPS"):
+        raise HTTPException(status_code=400, detail="data_source debe ser ERA5, ERA5_LAND, IMERG o CHIRPS")
     if request.zone_type not in ("cuenca", "municipio", "perimetro"):
         raise HTTPException(status_code=400, detail="zone_type debe ser cuenca, municipio o perimetro")
     if request.cuenca_dn < 1:
