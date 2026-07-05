@@ -201,6 +201,44 @@ CHIRPS_RELATIONS = [
 ]
 
 # ──────────────────────────────────────────────────────────
+# CUENCAS — ERA5-Land (0.1°)
+# ──────────────────────────────────────────────────────────
+ERA5_LAND_RELATIONS = [
+    {"cell_id": "-74.000000_5.100000", "nombre": "Neusa", "dn": 5, "area_m2": 16985614.0575477},
+    {"cell_id": "-73.800000_4.700000", "nombre": "Chuza", "dn": 4, "area_m2": 18187135.3002584},
+    {"cell_id": "-73.900000_4.700000", "nombre": "Tomine", "dn": 6, "area_m2": 1824476.77990109},
+    {"cell_id": "-73.700000_4.900000", "nombre": "Tomine", "dn": 6, "area_m2": 21573.6364226625},
+    {"cell_id": "-74.100000_4.300000", "nombre": "La regadera", "dn": 1, "area_m2": 24333925.8839487},
+    {"cell_id": "-73.900000_5.100000", "nombre": "Neusa", "dn": 5, "area_m2": 2442937.38513039},
+    {"cell_id": "-73.800000_4.600000", "nombre": "Chuza", "dn": 4, "area_m2": 26559052.7335927},
+    {"cell_id": "-73.700000_5.100000", "nombre": "Sisga", "dn": 3, "area_m2": 32078883.890882},
+    {"cell_id": "-74.100000_4.400000", "nombre": "La regadera", "dn": 1, "area_m2": 32580702.1027797},
+    {"cell_id": "-73.800000_5.000000", "nombre": "Sisga", "dn": 3, "area_m2": 32893295.1025517},
+    {"cell_id": "-73.800000_4.800000", "nombre": "Tomine", "dn": 6, "area_m2": 33109433.1702631},
+    {"cell_id": "-74.000000_4.700000", "nombre": "San Rafael", "dn": 7, "area_m2": 33813292.8395818},
+    {"cell_id": "-73.800000_4.900000", "nombre": "Sisga", "dn": 3, "area_m2": 339129.670693941},
+    {"cell_id": "-73.700000_4.500000", "nombre": "Chuza", "dn": 4, "area_m2": 3682233.6020893},
+    {"cell_id": "-73.900000_5.200000", "nombre": "Neusa", "dn": 5, "area_m2": 37869267.5380778},
+    {"cell_id": "-74.200000_4.400000", "nombre": "Chisaca", "dn": 2, "area_m2": 38862751.1544576},
+    {"cell_id": "-73.700000_4.900000", "nombre": "Sisga", "dn": 3, "area_m2": 3978347.27803872},
+    {"cell_id": "-74.000000_4.600000", "nombre": "San Rafael", "dn": 7, "area_m2": 40261207.1604202},
+    {"cell_id": "-73.700000_4.700000", "nombre": "Chuza", "dn": 4, "area_m2": 4649579.62400303},
+    {"cell_id": "-74.200000_4.300000", "nombre": "Chisaca", "dn": 2, "area_m2": 49940409.7834697},
+    {"cell_id": "-74.200000_4.400000", "nombre": "La regadera", "dn": 1, "area_m2": 50381033.9373081},
+    {"cell_id": "-74.200000_4.300000", "nombre": "La regadera", "dn": 1, "area_m2": 54671938.0759682},
+    {"cell_id": "-73.700000_4.600000", "nombre": "Chuza", "dn": 4, "area_m2": 57535598.7400405},
+    {"cell_id": "-73.800000_5.000000", "nombre": "Tomine", "dn": 6, "area_m2": 63681688.1160799},
+    {"cell_id": "-73.800000_5.100000", "nombre": "Sisga", "dn": 3, "area_m2": 714568.232756723},
+    {"cell_id": "-73.900000_4.800000", "nombre": "Tomine", "dn": 6, "area_m2": 75725792.7512409},
+    {"cell_id": "-73.700000_5.000000", "nombre": "Sisga", "dn": 3, "area_m2": 75747175.8250511},
+    {"cell_id": "-74.000000_5.200000", "nombre": "Neusa", "dn": 5, "area_m2": 80223981.0192505},
+    {"cell_id": "-73.900000_4.900000", "nombre": "Tomine", "dn": 6, "area_m2": 80674285.6648734},
+    {"cell_id": "-74.100000_4.300000", "nombre": "Chisaca", "dn": 2, "area_m2": 94339.062074727},
+    {"cell_id": "-73.800000_4.900000", "nombre": "Tomine", "dn": 6, "area_m2": 98603305.3548355},
+    {"cell_id": "-73.900000_5.000000", "nombre": "Tomine", "dn": 6, "area_m2": 9984644.52640321},
+]
+
+# ──────────────────────────────────────────────────────────
 # MUNICIPIO (Bogotá) — relaciones por fuente
 # ──────────────────────────────────────────────────────────
 MUNICIPIO_RELATIONS = {
@@ -331,7 +369,41 @@ MUNICIPIO_RELATIONS = {
         {"cell_id": "-74.375000_3.725000", "nombre": "Bogotá", "dn": 1, "area_m2": 148180.153},
     ],
     "ERA5": [],
-    "ERA5_LAND": [],
+    "ERA5_LAND": [
+        {"cell_id": "-74.000000_4.500000", "nombre": "Bogotá", "dn": 1, "area_m2": 6266417.099},
+        {"cell_id": "-74.000000_4.600000", "nombre": "Bogotá", "dn": 1, "area_m2": 54064138.62},
+        {"cell_id": "-74.000000_4.700000", "nombre": "Bogotá", "dn": 1, "area_m2": 47659287.74},
+        {"cell_id": "-74.000000_4.800000", "nombre": "Bogotá", "dn": 1, "area_m2": 35506755.89},
+        {"cell_id": "-74.100000_4.000000", "nombre": "Bogotá", "dn": 1, "area_m2": 5798655.399},
+        {"cell_id": "-74.100000_4.100000", "nombre": "Bogotá", "dn": 1, "area_m2": 31134472.49},
+        {"cell_id": "-74.100000_4.200000", "nombre": "Bogotá", "dn": 1, "area_m2": 26595474.74},
+        {"cell_id": "-74.100000_4.300000", "nombre": "Bogotá", "dn": 1, "area_m2": 32125552.62},
+        {"cell_id": "-74.100000_4.400000", "nombre": "Bogotá", "dn": 1, "area_m2": 51994905.92},
+        {"cell_id": "-74.100000_4.500000", "nombre": "Bogotá", "dn": 1, "area_m2": 101815775.1},
+        {"cell_id": "-74.100000_4.600000", "nombre": "Bogotá", "dn": 1, "area_m2": 122704812.7},
+        {"cell_id": "-74.100000_4.700000", "nombre": "Bogotá", "dn": 1, "area_m2": 116929000.4},
+        {"cell_id": "-74.100000_4.800000", "nombre": "Bogotá", "dn": 1, "area_m2": 52545094.94},
+        {"cell_id": "-74.200000_3.900000", "nombre": "Bogotá", "dn": 1, "area_m2": 3034.925},
+        {"cell_id": "-74.200000_4.000000", "nombre": "Bogotá", "dn": 1, "area_m2": 58182765.87},
+        {"cell_id": "-74.200000_4.100000", "nombre": "Bogotá", "dn": 1, "area_m2": 119719141.1},
+        {"cell_id": "-74.200000_4.200000", "nombre": "Bogotá", "dn": 1, "area_m2": 100126334.1},
+        {"cell_id": "-74.200000_4.300000", "nombre": "Bogotá", "dn": 1, "area_m2": 78117460.52},
+        {"cell_id": "-74.200000_4.400000", "nombre": "Bogotá", "dn": 1, "area_m2": 69448823.56},
+        {"cell_id": "-74.200000_4.500000", "nombre": "Bogotá", "dn": 1, "area_m2": 38606934.65},
+        {"cell_id": "-74.200000_4.600000", "nombre": "Bogotá", "dn": 1, "area_m2": 57406379.39},
+        {"cell_id": "-74.200000_4.700000", "nombre": "Bogotá", "dn": 1, "area_m2": 15350615.75},
+        {"cell_id": "-74.300000_3.800000", "nombre": "Bogotá", "dn": 1, "area_m2": 20112909.42},
+        {"cell_id": "-74.300000_3.900000", "nombre": "Bogotá", "dn": 1, "area_m2": 78137764.32},
+        {"cell_id": "-74.300000_4.000000", "nombre": "Bogotá", "dn": 1, "area_m2": 122798893.9},
+        {"cell_id": "-74.300000_4.100000", "nombre": "Bogotá", "dn": 1, "area_m2": 68143671.96},
+        {"cell_id": "-74.400000_3.700000", "nombre": "Bogotá", "dn": 1, "area_m2": 7733917.122},
+        {"cell_id": "-74.400000_3.800000", "nombre": "Bogotá", "dn": 1, "area_m2": 62000877.07},
+        {"cell_id": "-74.400000_3.900000", "nombre": "Bogotá", "dn": 1, "area_m2": 22403952.45},
+        {"cell_id": "-74.400000_4.000000", "nombre": "Bogotá", "dn": 1, "area_m2": 16158541.54},
+        {"cell_id": "-74.400000_4.100000", "nombre": "Bogotá", "dn": 1, "area_m2": 418568.308},
+        {"cell_id": "-74.500000_3.700000", "nombre": "Bogotá", "dn": 1, "area_m2": 35323.687},
+        {"cell_id": "-74.500000_3.800000", "nombre": "Bogotá", "dn": 1, "area_m2": 2879.505},
+    ],
 }
 
 # ──────────────────────────────────────────────────────────
@@ -382,7 +454,18 @@ PERIMETRO_RELATIONS = {
         {"cell_id": "-74.075000_4.475000", "nombre": "Centro Urb", "dn": 1, "area_m2": 735131.168},
     ],
     "ERA5": [],
-    "ERA5_LAND": [],
+    "ERA5_LAND": [
+        {"cell_id": "-74.000000_4.600000", "nombre": "Centro Urb", "dn": 1, "area_m2": 32559.895},
+        {"cell_id": "-74.000000_4.700000", "nombre": "Centro Urb", "dn": 1, "area_m2": 25938148.49},
+        {"cell_id": "-74.000000_4.800000", "nombre": "Centro Urb", "dn": 1, "area_m2": 14968638.54},
+        {"cell_id": "-74.100000_4.500000", "nombre": "Centro Urb", "dn": 1, "area_m2": 33103360.17},
+        {"cell_id": "-74.100000_4.600000", "nombre": "Centro Urb", "dn": 1, "area_m2": 100728669.5},
+        {"cell_id": "-74.100000_4.700000", "nombre": "Centro Urb", "dn": 1, "area_m2": 109476303.1},
+        {"cell_id": "-74.100000_4.800000", "nombre": "Centro Urb", "dn": 1, "area_m2": 16192775.29},
+        {"cell_id": "-74.200000_4.500000", "nombre": "Centro Urb", "dn": 1, "area_m2": 3288599.553},
+        {"cell_id": "-74.200000_4.600000", "nombre": "Centro Urb", "dn": 1, "area_m2": 48572594.26},
+        {"cell_id": "-74.200000_4.700000", "nombre": "Centro Urb", "dn": 1, "area_m2": 10103812.32},
+    ],
 }
 
 
@@ -393,7 +476,7 @@ ZONE_RELATIONS_SEED = {
         "ERA5": ERA5_RELATIONS,
         "IMERG": IMERG_RELATIONS,
         "CHIRPS": CHIRPS_RELATIONS,
-        "ERA5_LAND": [],
+        "ERA5_LAND": ERA5_LAND_RELATIONS,
     },
     "municipio": MUNICIPIO_RELATIONS,
     "perimetro": PERIMETRO_RELATIONS,
