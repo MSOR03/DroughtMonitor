@@ -11,78 +11,97 @@ Este capítulo describe los flujos de interacción típicos del usuario estánda
 \centering
 \begin{tikzpicture}[
     every node/.style={font=\small\sffamily},
-    %% Rectángulo de proceso
     proc/.style={
         draw=violet, fill=violet!10, text=black, rounded corners=3pt,
-        minimum width=5.0cm, minimum height=0.72cm,
+        minimum width=4.5cm, minimum height=0.70cm,
         align=center, line width=0.8pt},
-    %% Rombo de decisión (aspect alto = rombo plano)
     dec/.style={
         draw=violet, fill=violet!8, text=black,
-        diamond, aspect=4.5,
-        minimum width=5.0cm, minimum height=0.72cm,
+        diamond, aspect=3.8,
+        minimum width=4.9cm, minimum height=0.82cm,
         align=center, line width=0.8pt, font=\small\sffamily},
-    %% Cápsula terminal
     term/.style={
         draw=violet, fill=violet, text=white,
         rounded corners=14pt, minimum width=3.2cm, minimum height=0.68cm,
         align=center, line width=0.8pt},
-    %% Nodo lateral (error / aviso)
-    side/.style={
-        draw=violet!55, fill=violet!6, text=black, rounded corners=3pt,
-        minimum width=2.6cm, minimum height=0.68cm,
-        align=center, line width=0.7pt, font=\small\sffamily},
+    actstep/.style={
+        draw=violet!70, fill=violet!5, text=black, rounded corners=4pt,
+        text width=4.4cm, minimum height=1.90cm,
+        align=center, line width=0.8pt, inner sep=4.5pt,
+        font=\footnotesize\sffamily},
     arr/.style={draw=violet!65, ->, line width=0.9pt},
     lbl/.style={fill=none, draw=none, font=\footnotesize\sffamily,
                 text=violet!60!black},
 ]
 
-%% ── COLUMNA PRINCIPAL (x = 0) ───────────────────────────────────
-\node[term] (ini)   at (0,  0.00) {Inicio};
-\node[proc] (login) at (0, -1.65) {Acceder al sistema};
-\node[dec]  (auth)  at (0, -3.35) {¿Autenticado?};
-\node[proc] (sel)   at (0, -5.15) {Configurar sección y parámetros};
-\node[proc] (map2d) at (0, -6.85) {Explorar mapa 2D};
-\node[proc] (chart) at (0, -8.55) {Clic en celda/cuenca $\to$ ver gráfica 1D};
-\node[dec]  (exp)   at (0,-10.30) {¿Exportar datos?};
-\node[proc] (dl)    at (0,-12.10) {Descargar PNG o JSON};
-\node[dec]  (cont)  at (0,-13.85) {¿Continuar explorando?};
-\node[term] (fin)   at (0,-15.60) {Fin / Cerrar sesión};
+%% ── COLUMNA PRINCIPAL (sin autenticación) ───────────────────────
+\node[term] (ini)  at (0, 0.00) {Inicio};
+\node[proc] (mod)  at (0,-1.75) {Seleccionar funcionalidad};
 
-%% ── NODO LATERAL ────────────────────────────────────────────────
-\node[side] (err) at (4.5,-3.35) {Credenciales\\inválidas};
+%% ── RAMA HISTÓRICO (izquierda) ──────────────────────────────────
+\node[proc] (hist0) at (-5.15,-3.60) {Análisis histórico};
+\node[actstep] (hist1) at (-5.15,-5.35) {Elegir tipo de sequía.};
+\node[actstep] (hist2) at (-5.15,-7.75) {Definir índice de sequía\\o variable climática.};
+\node[actstep] (hist3) at (-5.15,-10.15) {Configurar vista 1D/2D\\y nivel de agregación.};
+\node[actstep] (hist4) at (-5.15,-12.55) {Exportar resultados\\(.png o .json).};
 
-%% ── FLUJO VERTICAL PRINCIPAL ────────────────────────────────────
-\draw[arr] (ini)   -- (login);
-\draw[arr] (login) -- (auth);
-\draw[arr] (auth)  -- node[lbl, right=3pt]{Sí} (sel);
-\draw[arr] (sel)   -- (map2d);
-\draw[arr] (map2d) -- (chart);
-\draw[arr] (chart) -- (exp);
-\draw[arr] (exp)   -- node[lbl, right=3pt]{Sí} (dl);
-\draw[arr] (dl)    -- (cont);
-\draw[arr] (cont)  -- node[lbl, right=3pt]{No} (fin);
+%% ── RAMA PREDICCIÓN ACTUAL (centro) ─────────────────────────────
+\node[proc] (pred0) at (0,-3.60) {Predicción actual};
+\node[actstep] (pred1) at (0,-5.35) {Elegir vista:\\serie (1D) o mapa (2D).};
+\node[actstep] (pred2) at (0,-7.75) {Seleccionar unidad espacial\\e índice de sequía.};
+\node[actstep] (pred3) at (0,-10.15) {Definir nivel de agregación\\y horizonte de predicción.};
+\node[actstep] (pred4) at (0,-12.55) {Consultar anomalía de precipitación\\(Si, nivel de agregación =\\horizonte de predicción)\\y exportar (.png o .json).};
 
-%% ── FALLO DE AUTENTICACIÓN (lado derecho) ───────────────────────
-%% auth → error (horizontal)
-\draw[arr] (auth.east) -- node[lbl, above=1pt]{No} (err.west);
-%% error → login: sube, cruza por encima del rombo auth, llega a login.east
-\draw[arr] (err.north) -- ++(0,0.65) -| (login.east);
+%% ── RAMA HISTÓRICO DE PREDICCIONES (derecha) ────────────────────
+\node[proc] (hpred0) at (5.15,-3.60) {Histórico de predicciones};
+\node[actstep] (hpred1) at (5.15,-5.35) {Elegir fecha de emisión.};
+\node[actstep] (hpred2) at (5.15,-7.75) {Elegir vista:\\serie (1D) o mapa (2D).};
+\node[actstep] (hpred3) at (5.15,-10.15) {Definir unidad, índice de sequía\\y nivel de agregación.};
+\node[actstep] (hpred4) at (5.15,-12.55) {Seleccionar horizonte de predicción\\y exportar (.png o .json).};
 
-%% ── BYPASS: no exportar (carril derecho, x ≈ 4.0) ───────────────
-\draw[arr] (exp.east)
-    -- node[lbl, above=1pt]{No} ++(1.5,0)
-    -- ++(0,-3.55)
-    -- (cont.east);
+%% ── CONVERGENCIA Y CIERRE ───────────────────────────────────────
+\node[dec]  (cont) at (0,-15.60) {¿Realizar otra consulta?};
+\node[term] (fin)  at (0,-17.40) {Fin};
 
-%% ── BUCLE CONTINUAR (carril izquierdo, x ≈ −3.3) ────────────────
+%% ── FLUJO PRINCIPAL ─────────────────────────────────────────────
+\draw[arr] (ini) -- (mod);
+\path (mod.south) ++(0,-0.65) coordinate (splitmod);
+\draw[arr] (mod.south) -- (splitmod);
+\draw[arr] (splitmod) -| (hist0.north);
+\draw[arr] (splitmod) -- (pred0.north);
+\draw[arr] (splitmod) -| (hpred0.north);
+
+%% ── FLUJO VERTICAL POR CADA RAMA ────────────────────────────────
+\draw[arr] (hist0) -- (hist1);
+\draw[arr] (hist1) -- (hist2);
+\draw[arr] (hist2) -- (hist3);
+\draw[arr] (hist3) -- (hist4);
+
+\draw[arr] (pred0) -- (pred1);
+\draw[arr] (pred1) -- (pred2);
+\draw[arr] (pred2) -- (pred3);
+\draw[arr] (pred3) -- (pred4);
+
+\draw[arr] (hpred0) -- (hpred1);
+\draw[arr] (hpred1) -- (hpred2);
+\draw[arr] (hpred2) -- (hpred3);
+\draw[arr] (hpred3) -- (hpred4);
+
+%% ── CONVERGENCIA DESDE LAS RAMAS ────────────────────────────────
+\draw[arr] (hist4.south) |- (cont.west);
+\draw[arr] (pred4.south) -- (cont.north);
+\draw[arr] (hpred4.south) |- (cont.east);
+
+\draw[arr] (cont) -- node[lbl, right=2pt]{No} (fin);
+
+%% ── BUCLE DE NUEVA CONSULTA ─────────────────────────────────────
 \draw[arr] (cont.west)
-    -- ++(-0.8,0)
-    -- ++(0,8.70)
-    -- node[lbl, pos=1.0, above=2pt]{Sí} (sel.west);
+    -- ++(-7.0,0)
+    -- node[lbl, pos=0.42, left=2pt]{Sí} ++(0,13.85)
+    -- (mod.west);
 
 \end{tikzpicture}
-\caption{Flujo de acceso y uso del sistema para un usuario estándar.}
+\caption{Flujo de navegación del usuario para análisis histórico, predicción actual e histórico de predicciones.}
 \label{fig:flujo_usuario}
 \end{figure}
 
@@ -95,88 +114,117 @@ Este capítulo describe los flujos de interacción típicos del usuario estánda
     every node/.style={font=\small\sffamily},
     proc/.style={
         draw=teal, fill=teal!10, text=black, rounded corners=3pt,
-        minimum width=5.0cm, minimum height=0.72cm,
+        minimum width=4.8cm, minimum height=0.72cm,
         align=center, line width=0.8pt},
     dec/.style={
         draw=teal, fill=teal!8, text=black,
-        diamond, aspect=3.5,
-        minimum width=5.0cm, minimum height=0.72cm,
+        diamond, aspect=3.8,
+        minimum width=5.1cm, minimum height=0.82cm,
         align=center, line width=0.8pt, font=\small\sffamily},
     term/.style={
         draw=teal, fill=teal, text=white,
         rounded corners=14pt, minimum width=3.2cm, minimum height=0.68cm,
         align=center, line width=0.8pt},
-    act/.style={
+    admstep/.style={
         draw=teal!55, fill=teal!8, text=black, rounded corners=3pt,
-        minimum width=2.4cm, minimum height=0.68cm,
+        text width=4.2cm, minimum height=1.35cm,
+        align=center, line width=0.7pt, inner sep=4pt,
+        font=\footnotesize\sffamily},
+    admhighlight/.style={
+        draw=teal!70, fill=teal!12, text=black, rounded corners=3pt,
+        text width=4.2cm, minimum height=1.35cm,
+        align=center, line width=0.9pt, inner sep=4pt,
+        font=\footnotesize\sffamily},
+    side/.style={
+        draw=teal!55, fill=teal!6, text=black, rounded corners=3pt,
+        minimum width=3.0cm, minimum height=0.78cm,
         align=center, line width=0.7pt, font=\small\sffamily},
     arr/.style={draw=teal!65, ->, line width=0.9pt},
     lbl/.style={fill=none, draw=none, font=\footnotesize\sffamily,
                 text=teal!60!black},
 ]
 
-%% ── COLUMNA PRINCIPAL (x = 0) ───────────────────────────────────
+%% ── COLUMNA PRINCIPAL ───────────────────────────────────────────
 \node[term] (ini)   at (0,  0.00) {Inicio};
-\node[proc] (login) at (0, -1.65) {Autenticación de administrador};
-\node[dec]  (auth)  at (0, -3.35) {¿Acceso autorizado?};
-\node[proc] (panel) at (0, -5.05) {Panel de administración};
-\node[dec]  (acc)   at (0, -6.80) {¿Qué acción realizar?};
+\node[proc] (panel) at (0, -1.70) {Panel de administración};
+\node[dec]  (auth)  at (0, -3.55) {¿Acceso autorizado?};
 
-%% ── TRES RAMAS (y = -8.55, spread ±3.0 cm) ─────────────────────
-\node[act]  (upl) at (-3.0,-8.55) {Cargar\\archivo};
-\node[act]  (syn) at ( 0.0,-8.55) {Sincronizar\\con R2};
-\node[act]  (usr) at ( 3.0,-8.55) {Gestionar\\usuarios};
+%% ── NODO LATERAL DE ACCESO DENEGADO ────────────────────────────
+\node[side] (den) at (7.40,-3.55) {Solicitar credenciales};
 
-%% Sub-pasos de la carga (rama izquierda)
-\node[act]  (cfg)  at (-3.0,-10.25) {Configurar\\dataset};
-\node[act]  (act2) at (-3.0,-11.95) {Activar\\dataset};
+%% ── TRES FUNCIONALIDADES ────────────────────────────────────────
+\node[proc]    (files0) at (-5.25,-6.25) {Subir archivos};
+\node[admstep] (files1) at (-5.25,-7.95) {Abrir ventana\\Archivos.};
+\node[admstep] (files2) at (-5.25,-10.25) {Cargar archivos parquet\\según su tipología.};
+\node[admstep] (files3) at (-5.25,-12.55) {Seleccionar dataset\\y archivo cargado.};
+\node[admhighlight] (files4) at (-5.25,-14.85) {Asignar rol prediction\_monthly\\y fecha de emisión.};
+\node[draw=teal!70, fill=yellow!25, circle, minimum size=0.42cm, inner sep=0pt,
+    font=\scriptsize\bfseries] at ([xshift=-0.18cm,yshift=-0.16cm]files4.north east) {$\star$};
 
-%% ── CONVERGENCIA ────────────────────────────────────────────────
-\node[dec]  (more) at (0,-13.70) {¿Otra acción?};
-\node[term] (fin)  at (0,-15.45) {Fin / Cerrar sesión};
+\node[proc]    (users0) at (0,-6.25) {Crear/Editar Usuarios};
+\node[admstep] (users1) at (0,-7.95) {Abrir ventana\\Usuarios.};
+\node[admstep] (users2) at (0,-10.25) {Crear nuevo usuario,\\asignar usuario y contraseña.};
+\node[admstep] (users3) at (0,-12.55) {Asignar los permisos\\o rol de usuario.};
+\node[admstep] (users4) at (0,-14.85) {Editar los permisos de los usuarios\\existentes para dar de baja usuarios.};
 
-%% ── NODO DENEGADO (lado derecho) ────────────────────────────────
-\node[act]  (den) at (5.0,-3.35) {Acceso\\denegado};
+\node[proc]    (sync0) at (5.25,-6.25) {Sincronizar nube\\(Cloudflare R2)};
+\node[admstep] (sync1) at (5.25,-7.95) {Abrir carpeta\\Nube.};
+\node[admstep] (sync2) at (5.25,-10.25) {Refrescar archivos\\del backend.};
+\node[admstep] (sync3) at (5.25,-12.55) {Sincronizar archivos\\con Cloudflare R2.};
+\node[admstep] (sync4) at (5.25,-14.85) {Sincronizar BD\\con la nube.};
 
-%% ── FLUJO VERTICAL PRINCIPAL ────────────────────────────────────
-\draw[arr] (ini)   -- (login);
-\draw[arr] (login) -- (auth);
-\draw[arr] (auth)  -- node[lbl, right=3pt]{Sí} (panel);
-\draw[arr] (panel) -- (acc);
-\draw[arr] (more)  -- node[lbl, right=3pt]{No} (fin);
+%% ── CONVERGENCIA Y CIERRE ───────────────────────────────────────
+\node[dec]  (more) at (0,-17.30) {¿Otra acción?};
+\node[term] (fin)  at (0,-19.10) {Cerrar sesión};
+
+%% ── FLUJO PRINCIPAL ─────────────────────────────────────────────
+\draw[arr] (ini) -- (panel);
+\draw[arr] (panel) -- (auth);
+\path (auth.south) ++(0,-0.95) coordinate (splitadmin);
+\path (files0.north) ++(0,0.70) coordinate (filesbus);
+\path (users0.north) ++(0,0.70) coordinate (usersbus);
+\path (sync0.north) ++(0,0.70) coordinate (syncbus);
+\path (panel.east) ++(1.30,0) coordinate (panelreturn);
+\path (den.north) ++(0,1.35) coordinate (dentop);
+\draw[arr] (auth) -- node[lbl, right=4pt, pos=0.22]{Sí} (splitadmin);
+\draw[draw=teal!65, line width=0.9pt] (filesbus) -- (syncbus);
+\draw[arr] (splitadmin) -- (usersbus);
+\draw[arr] (filesbus) -- (files0.north);
+\draw[arr] (usersbus) -- (users0.north);
+\draw[arr] (syncbus) -- (sync0.north);
 
 %% ── ACCESO DENEGADO ─────────────────────────────────────────────
 \draw[arr] (auth.east) -- node[lbl, above=1pt]{No} (den.west);
-\draw[arr] (den.north) -- ++(0,0.70) -| (login.east);
+\draw[arr] (den.north) -- (dentop) -- (panelreturn) -- (panel.east);
 
-%% ── FLECHAS acc → TRES RAMAS ────────────────────────────────────
-%% Izquierda: acc.west -| upl.north  (L: izq luego abajo)
-\draw[arr] (acc.west) -|
-    node[lbl, pos=0.15, above=1pt]{Cargar} (upl.north);
-%% Centro: acc.south → syn.north  (recto hacia abajo)
-\draw[arr] (acc.south) --
-    node[lbl, right=2pt]{Sincronizar} (syn.north);
-%% Derecha: acc.east -| usr.north  (L: der luego abajo)
-\draw[arr] (acc.east) -|
-    node[lbl, pos=0.15, above=1pt]{Gestionar} (usr.north);
+%% ── FLUJO VERTICAL DE CADA RAMA ────────────────────────────────
+\draw[arr] (files0) -- (files1);
+\draw[arr] (files1) -- (files2);
+\draw[arr] (files2) -- (files3);
+\draw[arr] (files3) -- (files4);
 
-%% ── SUB-PASOS DE CARGA ──────────────────────────────────────────
-\draw[arr] (upl) -- (cfg);
-\draw[arr] (cfg) -- (act2);
+\draw[arr] (users0) -- (users1);
+\draw[arr] (users1) -- (users2);
+\draw[arr] (users2) -- (users3);
+\draw[arr] (users3) -- (users4);
 
-%% ── CONVERGENCIA HACIA more ─────────────────────────────────────
-%% Rama izquierda: act2 |- more.west  (baja, luego va a la derecha)
-\draw[arr] (act2.south) |- (more.west);
-%% Rama central: syn → more.north  (recto)
-\draw[arr] (syn.south) -- (more.north);
-%% Rama derecha: usr |- more.east  (baja, luego va a la izquierda)
-\draw[arr] (usr.south) |- (more.east);
+\draw[arr] (sync0) -- (sync1);
+\draw[arr] (sync1) -- (sync2);
+\draw[arr] (sync2) -- (sync3);
+\draw[arr] (sync3) -- (sync4);
 
-%% ── BUCLE OTRA ACCIÓN (carril izquierdo exterior, x ≈ −4.7) ─────
+%% ── CONVERGENCIA HACIA OTRA ACCIÓN ─────────────────────────────
+\draw[arr] (files4.south) |- (more.west);
+\draw[arr] (users4.south) -- (more.north);
+\draw[arr] (sync4.south) |- (more.east);
+
+\draw[arr] (more) -- node[lbl, right=2pt]{No} (fin);
+
+%% ── BUCLE DE RETORNO ────────────────────────────────────────────
 \draw[arr] (more.west)
-    -- ++(-2.2,0)
-    -- ++(0,8.65)
-    -- node[lbl, pos=1.0, above=2pt]{Sí} (panel.west);
+    -- ++(-7.1,0)
+    -- node[lbl, pos=0.42, left=2pt]{Sí} ++(0,15.60)
+    -- (panel.west);
 
 \end{tikzpicture}
 \caption{Flujo de acceso y operación para un administrador del sistema.}

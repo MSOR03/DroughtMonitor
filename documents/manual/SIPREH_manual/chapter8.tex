@@ -16,7 +16,7 @@ Este capítulo describe cómo funciona cada despliegue en producción y qué se 
 
 El frontend es una aplicación \textbf{Next.js 16} que, para producción, se compila como \textbf{exportación estática}. En lugar de un servidor Node.js permanente, el resultado es una carpeta \texttt{out/} con HTML, CSS y JavaScript que cualquier hosting de archivos estáticos puede servir. GitHub Pages cumple ese rol sin costo adicional.
 
-\subsection*{Cómo se publica}
+\subsection{Cómo se publica}
 
 El despliegue está automatizado con GitHub Actions. El flujo vive en \texttt{.github/workflows/deploy.yml} y se dispara con cada \textit{push} a la rama \texttt{main}. No hay que ejecutar nada a mano: basta con fusionar a \texttt{main}.
 
@@ -27,7 +27,7 @@ El flujo realiza dos trabajos encadenados:
     \item \textbf{Deploy.} Publica ese artefacto en el entorno \texttt{github-pages}, que queda disponible en la URL del proyecto.
 \end{enumerate}
 
-\subsection*{La pieza clave: a qué backend apunta el sitio}
+\subsection{La pieza clave: a qué backend apunta el sitio}
 
 Como el sitio es estático, la dirección del backend se ``hornea'' en el código \textbf{durante el build}, no en tiempo de ejecución. Por eso la variable que la define debe estar disponible en el momento de compilar:
 
@@ -41,7 +41,7 @@ En el flujo de GitHub Actions, este valor se inyecta desde una \textit{variable 
 Como la URL del backend queda fijada en el build, un cambio en \texttt{RENDER\_BACKEND\_URL} solo surte efecto tras un nuevo despliegue. Volver a ejecutar el flujo (o hacer un \textit{push} a \texttt{main}) regenera el sitio con la nueva dirección.
 \end{remark}
 
-\subsection*{El detalle del \texttt{basePath}}
+\subsection{El detalle del \texttt{basePath}}
 
 Un sitio de GitHub Pages de proyecto no se sirve en la raíz del dominio, sino bajo una subruta con el nombre del repositorio (por ejemplo, \texttt{https://<organización>.github.io/SIPREH/}). Si la aplicación asumiera que vive en la raíz, las imágenes y los enlaces internos se romperían.
 
@@ -63,7 +63,7 @@ https://<organización>.github.io/SIPREH/
 
 El backend es una aplicación \textbf{FastAPI + Uvicorn} que se despliega en \textbf{Railway}. Railway construye el servicio directamente desde el repositorio y lo mantiene en línea, exponiéndolo en una URL pública del tipo \texttt{https://<servicio>.up.railway.app}.
 
-\subsection*{Modo producción}
+\subsection{Modo producción}
 
 El punto de entrada \texttt{run.py} decide automáticamente si está en producción. Cuando detecta la variable \texttt{RAILWAY\_ENVIRONMENT} (que Railway inyecta sola) o \texttt{RENDER}, o cuando \texttt{DEBUG} no está definida, desactiva la recarga automática de código y escucha en el puerto que la plataforma indique mediante la variable \texttt{PORT}. En desarrollo local, en cambio, la recarga queda activa para agilizar el trabajo.
 
@@ -71,7 +71,7 @@ El punto de entrada \texttt{run.py} decide automáticamente si está en producci
 No es necesario configurar el puerto manualmente en Railway: la plataforma asigna \texttt{PORT} y \texttt{run.py} la respeta. Tampoco se necesita un \texttt{Procfile} ni un servidor de procesos externo; Uvicorn es el servidor de la aplicación.
 \end{remark}
 
-\subsection*{Variables de entorno}
+\subsection{Variables de entorno}
 
 Toda la configuración se carga desde variables de entorno (en local, desde un archivo \texttt{.env}; en Railway, desde el panel del servicio). La gran mayoría son opcionales y tienen valores por defecto razonables: el backend arranca aunque falten R2, Redis o Groq, degradándose con elegancia. Las relevantes para un despliegue completo son:
 
@@ -107,11 +107,11 @@ ADMIN_PASSWORD=<contraseña_inicial>
 \texttt{BACKEND\_CORS\_ORIGINS} debe incluir el dominio de GitHub Pages desde el que el frontend hace las peticiones; de lo contrario el navegador bloqueará las respuestas por política de CORS. Es el ajuste que más suele olvidarse al conectar ambos despliegues por primera vez.
 \end{remark}
 
-\subsection*{Inicialización de la base de datos}
+\subsection{Inicialización de la base de datos}
 
 La primera vez que se prepara un entorno, se ejecuta \texttt{python init\_db.py}. Este script crea las tablas, da de alta el usuario administrador definido por \texttt{ADMIN\_EMAIL}/\texttt{ADMIN\_PASSWORD} y normaliza metadatos antiguos. El esquema se genera directamente con SQLAlchemy (\texttt{create\_all}); el proyecto no usa migraciones Alembic, de modo que para un primer despliegue basta con este paso.
 
-\subsection*{Verificación}
+\subsection{Verificación}
 
 Una vez en línea, la API publica su documentación interactiva, útil para comprobar que el servicio responde:
 
@@ -126,7 +126,7 @@ Una vez en línea, la API publica su documentación interactiva, útil para comp
 
 SIPREH separa deliberadamente dos tipos de almacenamiento: la base de datos relacional, que guarda solo metadatos, y el bucket de objetos, que guarda los datos científicos pesados. Cada uno se despliega de forma distinta.
 
-\subsection*{Base de datos relacional}
+\subsection{Base de datos relacional}
 
 Contiene los metadatos del sistema: usuarios, el registro de archivos Parquet y las relaciones geográficas entre celdas y zonas. Es liviana, y por eso su despliegue es sencillo:
 
@@ -146,7 +146,7 @@ DATABASE_URL=postgresql://sipreh_user:password@host:5432/sipreh
 \end{verbatim}
 \end{example}
 
-\subsection*{Almacenamiento de objetos Cloudflare R2}
+\subsection{Almacenamiento de objetos Cloudflare R2}
 
 El bucket R2 guarda todos los archivos Parquet con los datos hidrometeorológicos. La configuración inicial es:
 
@@ -166,7 +166,7 @@ A diferencia de Amazon S3, Cloudflare R2 no cobra por egreso (\textit{egress}). 
 \textbf{Egress} (en almacenamiento en la nube): transferencia de datos desde el proveedor hacia el exterior. Servicios como Amazon S3 o Google Cloud Storage cobran por GB de egreso, un costo que puede crecer rápido en aplicaciones que sirven archivos de datos grandes con frecuencia.
 \end{definition}
 
-\subsection*{Resumen de infraestructura}
+\subsection{Resumen de infraestructura}
 
 \begin{center}
 \begin{tabular}{@{}llll@{}}
