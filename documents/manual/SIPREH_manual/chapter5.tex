@@ -7,7 +7,7 @@
 
 La sección de datos históricos permite consultar el estado de sequía pasado mediante índices calculados sobre múltiples fuentes de datos. El usuario selecciona la fuente de datos, el índice, la escala temporal y la fecha; el sistema actualiza el mapa espacial y, al hacer clic en una celda, muestra la serie de tiempo correspondiente.
 
-\subsection*{Índices meteorológicos}
+\subsection{Índices meteorológicos}
 
 \begin{center}
 \small
@@ -24,7 +24,7 @@ PDSI & Sin escala    & Balance hídrico con oferta, demanda y humedad de suelo. 
 \end{tabular}
 \end{center}
 
-\subsection*{Fuentes de datos disponibles}
+\subsection{Fuentes de datos disponibles}
 
 \begin{center}
 \small
@@ -40,7 +40,7 @@ ERA5      & 0.25° ($\approx$28 km)& ECMWF       & \texttt{historical\_era5} \\
 \end{tabular}
 \end{center}
 
-\subsection*{Categorías de severidad}
+\subsection{Categorías de severidad}
 
 \begin{center}
 \small
@@ -75,7 +75,7 @@ Cada predicción incluye:
     \item \textbf{Resumen IA:} interpretación en lenguaje natural generada automáticamente en español mediante la API Groq (modelo Llama 3.1-8b-instant).
 \end{itemize}
 
-\subsection*{Anomalías de precipitación}
+\subsection{Anomalías de precipitación}
 
 Junto al mapa del índice, la predicción actual puede mostrar un mapa de \textbf{anomalías de precipitación}: el déficit o superávit de lluvia previsto, expresado en milímetros. La idea es traducir el SPI predicho ---que es un número adimensional--- a una cantidad física de lluvia, mucho más fácil de interpretar para la gestión del recurso.
 
@@ -136,11 +136,13 @@ La sección de predicción histórica permite comparar versiones de predicción 
 
 El módulo de administración centraliza la gestión operativa del sistema. Solo es accesible para usuarios con rol de administrador autenticados con JWT.
 
-\subsection*{Carga y actualización de archivos Parquet}
+\subsection{Carga y actualización de archivos Parquet}
 
 La carga de datos es el flujo de trabajo más frecuente del administrador. A continuación se describe el proceso completo.
 
-\paragraph{Convención de nombre de archivo.} Idealmente, la resolución y la fuente de cada archivo se registran de forma explícita en sus metadatos. Como respaldo, el sistema también sabe inferirlas a partir del nombre del archivo, que debe contener una de estas palabras clave (sin distinción de mayúsculas):
+\subsubsection{Convención de nombre de archivo}
+
+Idealmente, la resolución y la fuente de cada archivo se registran de forma explícita en sus metadatos. Como respaldo, el sistema también sabe inferirlas a partir del nombre del archivo, que debe contener una de estas palabras clave (sin distinción de mayúsculas):
 
 \begin{center}
 \small
@@ -174,7 +176,7 @@ Nombres de archivo válidos:
 La resolución no es un dato cosmético: el frontend la usa para dibujar el tamaño de cada celda en el mapa. Si una fuente quedara registrada con la resolución de otra, las celdas se renderizarían demasiado grandes o demasiado pequeñas y se solaparían. Por eso conviene que cada archivo lleve su resolución correcta en los metadatos y que el nombre respete la convención anterior.
 \end{remark}
 
-\paragraph{Pasos para cargar un nuevo archivo.}
+\subsubsection{Pasos para cargar un nuevo archivo}
 
 \begin{enumerate}
     \item Ingresar al panel de administración con credenciales de administrador.
@@ -206,7 +208,7 @@ Activate Now & Si se activa, el archivo queda disponible de inmediato. & Checkbo
     \item Si no se marcó \textit{Activate Now}, el dataset puede activarse posteriormente desde la sección \textbf{Datasets}.
 \end{enumerate}
 
-\paragraph{Actualización de un archivo existente.}
+\subsubsection{Actualización de un archivo existente}
 
 Para reemplazar un archivo del mismo dataset con datos más recientes:
 \begin{enumerate}
@@ -220,7 +222,7 @@ Para reemplazar un archivo del mismo dataset con datos más recientes:
 Los archivos de predicción (\texttt{prediction\_main.parquet}) siguen el mismo proceso. Cada versión se identifica por su \texttt{issued\_at}, lo que permite a los usuarios consultar predicciones históricas emitidas en fechas anteriores.
 \end{remark}
 
-\subsection*{Sincronización con Cloudflare R2}
+\subsection{Sincronización con Cloudflare R2}
 
 La sincronización bidireccional mantiene la consistencia entre la base de datos de metadatos y los archivos físicos en R2. Al sincronizar:
 \begin{itemize}
@@ -228,7 +230,7 @@ La sincronización bidireccional mantiene la consistencia entre la base de datos
     \item Los registros sin archivo correspondiente en R2 se marcan como no disponibles.
 \end{itemize}
 
-\subsection*{Gestión de usuarios}
+\subsection{Gestión de usuarios}
 
 \begin{itemize}
     \item Creación de nuevos usuarios con rol estándar o administrador.
