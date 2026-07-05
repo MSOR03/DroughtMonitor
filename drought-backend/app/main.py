@@ -45,8 +45,25 @@ async def lifespan(app: FastAPI):
         print(f"Default admin user created: {settings.ADMIN_EMAIL}")
     else:
         print("Admin user already exists")
+
+    # Sembrar relaciones zona↔celda de forma idempotente en cada arranque.
+    # Necesario en producción: la auto-siembra de watershed_relations solo corre
+    # cuando las tablas están vacías, así que al AÑADIR nuevas relaciones (p.ej.
+    # ERA5_LAND) a una BD ya poblada no se insertarían sin esto. Es un upsert
+    # seguro por claves naturales: no duplica y solo agrega lo nuevo.
+    try:
+        from app.db.seed_zones import seed_zone_relations
+        from app.services.watershed_relations import refresh_zone_cache
+        zone_stats = seed_zone_relations(db)
+        if any(zone_stats.values()):
+            print(f"Zone relations seeded: {zone_stats}")
+            refresh_zone_cache()
+        else:
+            print("Zone relations already up to date")
+    except Exception as e:
+        print(f"WARNING: zone relation seeding failed: {e}")
     db.close()
-    
+
     print("Application startup complete")
 
     # Lanzar preload de archivos parquet en background (no bloquea startup)
