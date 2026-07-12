@@ -33,9 +33,9 @@
 \renewcommand{\thesection}{\arabic{section}}
 \renewcommand{\thesubsection}{\thesection.\arabic{subsection}}
 
-\title{Taller practico SIPREH}
+\title{Taller pr\'actico SIPREH}
 \authors{Grupo de Investigaci\'on en Ingenier\'ia de los Recursos H\'idricos --- GIREH\\Facultad de Ingenier\'ia, Universidad Nacional de Colombia}
-\date{\today}
+\date{V\'inculo a SIPREH: \url{https://msor03.github.io/SIPREH/}\\[0.8em]15 de julio de 2026}
 
 \begin{document}
 \maketitle
@@ -44,35 +44,35 @@
 \section{Objetivo del taller}
 Aplicar las principales funcionalidades de SIPREH para consultar, explorar, comparar e interpretar informaci\'on relacionada con sequ\'ias meteorol\'ogicas, sequ\'ias hidrol\'ogicas y predicciones, mediante el an\'alisis de series temporales y mapas espaciales.
 
-\section{An\'alisis hist\'orico}
+\section{Análisis hist\'orico}
 
 \subsection{Sequ\'ias meteorol\'ogicas}
 \begin{enumerate}[leftmargin=*,label=\alph*)]
-    \item Genere una serie temporal de la variable clim\'atica de precipitaci\'on con resoluci\'on mensual para la celda ubicada en las coordenadas (-74.425, 3.675), localizada en el extremo sur, con una resoluci\'on espacial de 0,05\textdegree{}. Considere como periodo de an\'alisis el comprendido entre el 01/01/2007 y el 31/01/2008. A partir de la serie temporal obtenida, identifique los valores m\'aximo y m\'inimo de precipitaci\'on.
-    \item Genere un mapa espacial del \i ndice SPI, con nivel de agregaci\'on de 3 meses y unidad de espacial de cuencas, utilizando como fuente de datos CHIRPS (0,05\textdegree{}), para el periodo comprendido entre el 01/01/2016 y el 29/02/2016. A partir de los resultados obtenidos, determine el grado de severidad de la sequ\'ia para la cuenca del Chuza.
-    \item Cambie el tipo de visualizaci\'on de mapa espacial a serie temporal y modifique el nivel de agregaci\'on de 3 meses a 1 mes. En el periodo de analisis indique desde 01/01/2016 a 31/12/2016 para la cuenca Chisaca. Identifique el valor m\'inimo, valor m\'aximo, valor promedio del indice SPI.
-    \item Genere un mapa del \i ndice RAI, con nivel de agregaci\'on de 6 meses y unidad espacial de celda, utilizando como fuente de datos CHIRPS (0,05\textdegree{}) para la fecha 15/02/2016. Exporte la imagen generada. Modifique la fecha de consulta al 15/08/201. Exporte la imagen generada y compare los resultados.
+    \item Genere una serie temporal de la variable clim\'atica de precipitaci\'on con resoluci\'on mensual para la celda ubicada en las coordenadas (-74.425, 3.675), localizada en el extremo sur, con una resoluci\'on espacial de 0,05 \textdegree{} (CHIRPS). Considere como periodo de análisis el comprendido entre el 01/01/2007 y el 31/01/2008. A partir de la serie temporal obtenida, identifique los valores m\'aximo y m\'inimo de precipitaci\'on.
+    \item Genere un mapa espacial del índice SPI, con nivel de agregaci\'on de 3 meses y unidad espacial de cuencas, utilizando como fuente de datos CHIRPS (0,05\textdegree{}), para el periodo comprendido entre el 01/01/2016 y el 29/02/2016. A partir de los resultados obtenidos, determine el grado de severidad de la sequ\'ia para la cuenca del embalse de Chuza.
+    \item Cambie el tipo de visualizaci\'on de mapa espacial a serie temporal y modifique el nivel de agregaci\'on de 3 meses a 1 mes. En el periodo de análisis indique desde 01/01/2016 a 31/12/2016 para la cuenca del embalse de Chisacá. Identifique el valor m\'inimo, valor m\'aximo, valor promedio del índice SPI.
+    \item Genere un mapa del índice RAI, con nivel de agregaci\'on de 6 meses y unidad espacial de celda, utilizando como fuente de datos CHIRPS (0,05\textdegree{}) para la fecha 15/02/2016. Exporte la imagen generada. Modifique la fecha de consulta al 15/08/2016. Exporte la imagen generada y compare los resultados.
 \end{enumerate}
 
 \subsection{Sequ\'ias hidrol\'ogicas}
 \begin{enumerate}[leftmargin=*,label=\alph*)]
-    \item Genere una serie temporal del \i ndice SDI, con un nivel de agregaci\'on de 1 mes, para el periodo comprendido entre el 01/01/2019 y el 31/12/2022, correspondiente a la estaci\'on R\'io Tunjuelito \textendash{} Puente Bosa. A partir de la serie obtenida, determine el valor m\'aximo del \i ndice.
-    \item Cambie el tipo de visualizaci\'on a mapa espacial y la fecha  01/05/2016. Determine el grado de severidad de la sequ\'ia hidrol\'ogica para la estaci\'on R\'io Guajaro Centro.
+    \item Genere una serie temporal del índice SDI, con un nivel de agregaci\'on de 1 mes, para el periodo comprendido entre el 01/01/2019 y el 31/12/2022, correspondiente a la estaci\'on R\'io Tunjuelito \textendash{} Puente Bosa. A partir de la serie obtenida, determine el valor m\'aximo del índice.
+    \item Cambie el tipo de visualizaci\'on a mapa espacial y la fecha a 01/05/2016. Determine el grado de severidad de la sequ\'ia hidrol\'ogica para la estaci\'on r\'io Guajaro Centro.
 \end{enumerate}
 
 \section{Predicci\'on actual}
 \begin{enumerate}[leftmargin=*,label=\alph*)]
-    \item Genere un mapa espacial, a unidad espacial de cuenca, del \i ndice SPI, con nivel de agregaci\'on de 12 meses y horizonte de predicci\'on de 2 meses. A partir de los resultados obtenidos, determine el grado de severidad del \i ndice SPI para la cuenca Chisac\'a.
-    \item Genere una serie temporal del \i ndice SPI, con unidad espacial de perimetro urbano y nivel de agregaci\'on de 3 meses. Seleccione el pol\'igono en el mapa y determine los valores m\'inimo, m\'aximo y promedio del \i ndice. Exporte los resultados en formatos JSON y PNG.
-    \item Genere un mapa, a unidad de celda, del \i ndice SPI, con nivel de agregaci\'on de 3 meses y horizonte de predicci\'on de 3 meses. Determine el grado de severidad de la sequ\'ia para la celda ubicada en las coordenadas -74.075, 5.275) (Esquina superior derecha).
-    \item Genere el an\'alisis de la anomal\'ia mediante la opci\'on \textquotedblleft Ver anomal\'ia 2D\textquotedblright. Para la celda de estudio, determine la anomal\'ia de precipitaci\'on y el valor promedio de precipitaci\'on correspondiente. Exporte los resultados en formatos JSON y PNG.
-    \item Genere el an\'alisis de anomal\'ias con nivel de agregaci\'on de 1 mes y  horizonte de predicci\'on de 5 meses. A partir de los resultados obtenidos, identifique la anomal\'ia de precipitaci\'on para la celda de estudio e interprete su comportamiento.
+    \item Genere un mapa espacial, a unidad espacial de cuenca, del índice SPI, con nivel de agregaci\'on de 12 meses y horizonte de predicci\'on de 2 meses. A partir de los resultados obtenidos, determine el grado de severidad del índice SPI para la cuenca del embalse de Chisac\'a.
+    \item Genere una serie temporal del índice SPI, con unidad espacial el perimetro urbano y nivel de agregaci\'on de 3 meses. Seleccione el pol\'igono en el mapa y determine los valores m\'inimo, m\'aximo y promedio del índice. Exporte los resultados en formatos JSON y PNG.
+    \item Genere un mapa, a unidad de celda, del índice SPI, con nivel de agregaci\'on de 3 meses y horizonte de predicci\'on de 3 meses. Determine el grado de severidad de la sequ\'ia para la celda ubicada en las coordenadas -74.075, 5.275 (Esquina superior derecha).
+    \item Genere el análisis de la anomal\'ia mediante la opci\'on \textquotedblleft Ver anomal\'ia 2D\textquotedblright. Para la celda de estudio, determine la anomal\'ia de precipitaci\'on y el valor promedio de precipitaci\'on correspondiente. Exporte los resultados en formatos JSON y PNG.
+    \item Genere el análisis de anomal\'ias con nivel de agregaci\'on de 1 mes y  horizonte de predicci\'on de 5 meses. A partir de los resultados obtenidos, identifique la anomal\'ia de precipitaci\'on para la celda de estudio e interprete su comportamiento.
 \end{enumerate}
 
 \section{Hist\'orico de predicciones}
 \begin{enumerate}[leftmargin=*,label=\alph*)]
-    \item Genere una visualizaci\'on de serie 1D, a unidad de cuenca, del \i ndice SPI, con nivel de agregaci\'on de 3 meses, para la cuenca San Rafael. Determine los valores m\'inimo y m\'aximo del \i ndice.
-    \item Genere una visualizaci\'on 2D, a unidad espacial de celda, del \i ndice SPI, con nivel de agregaci\'on de 12 meses y horizonte de predicci\'on de 7 meses. Exporte la imagen generada.
+    \item Genere una visualizaci\'on de serie 1D, a unidad de cuenca, del índice SPI, con nivel de agregaci\'on de 3 meses, para la cuenca del embalse de San Rafael. Determine los valores m\'inimo y m\'aximo del índice.
+    \item Genere una visualizaci\'on 2D, a unidad espacial de celda, del índice SPI, con nivel de agregaci\'on de 12 meses y horizonte de predicci\'on de 7 meses. Exporte la imagen generada.
 \end{enumerate}
 
 \end{document}
