@@ -79,13 +79,13 @@ Cada predicción incluye:
 
 Junto al mapa del índice, la predicción actual puede mostrar un mapa de \textbf{anomalías de precipitación}: el déficit o superávit de lluvia previsto, expresado en milímetros. La idea es traducir el SPI predicho ---que es un número adimensional--- a una cantidad física de lluvia, mucho más fácil de interpretar para la gestión del recurso.
 
-\paragraph{Cómo se calcula.} El SPI mide cuántas desviaciones estándar se aparta la precipitación de su valor normal. Para devolverlo a milímetros, SIPREH lo multiplica por la \textbf{desviación estándar histórica} de la precipitación acumulada de la celda:
+\paragraph{Cálculo de la anomalía de precipitación:}Para este proceso se utiliza el SPI, que mide cuántas desviaciones estándar se aparta la precipitación de su valor normal. Para devolverlo a milímetros, SIPREH lo multiplica por la \textbf{desviación estándar histórica} de la precipitación acumulada de la celda:
 \[
 A_{c} = \mathrm{SPI}_{c} \times \sigma^{P}_{c}
 \]
 donde $\mathrm{SPI}_{c}$ es el valor predicho del índice en la celda $c$ y $\sigma^{P}_{c}$ es la desviación estándar de la precipitación agregada de esa celda a lo largo del período climatológico de referencia. El resultado $A_c$ está en milímetros: positivo indica más lluvia que lo normal, negativo indica déficit.
 
-\paragraph{De dónde sale la climatología.} La referencia $\sigma^{P}_{c}$ se construye siempre a partir de la precipitación observada de \textbf{CHIRPS}, con estos pasos por celda:
+\paragraph{Construcción de la normal climatológica:}La referencia $\sigma^{P}_{c}$ se construye siempre a partir de la precipitación observada de \textbf{CHIRPS}, con estos pasos por celda:
 
 \begin{enumerate}
     \item Se acumula la precipitación mensual en una ventana móvil del tamaño de la escala (por ejemplo, 3 meses para una escala de 3).
@@ -115,7 +115,7 @@ Anomalía negativa fuerte  & Lluvia muy por debajo de lo normal & Rojo intenso \
 El mapa se actualiza al cambiar el horizonte en el panel lateral.
 
 \begin{remark}
-Como las anomalías quedan en milímetros, son directamente comparables con registros de lluvia y con la demanda hídrica. Un déficit sostenido a lo largo de varios horizontes es una señal temprana de sequía acumulada.
+Como las anomalías quedan en milímetros, son directamente comparables con registros de lluvia y con la oferta hídrica. Un déficit sostenido a lo largo de varios horizontes es una señal temprana de sequía acumulada.
 \end{remark}
 
 \begin{remark}

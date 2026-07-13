@@ -24,8 +24,8 @@
 \contentsline {subsection}{\numberline {5.1.3}Categorías de severidad}{15}{subsection.5.1.3}%
 \contentsline {section}{\numberline {5.2}Predicción actual}{16}{section.5.2}%
 \contentsline {subsection}{\numberline {5.2.1}Anomalías de precipitación}{16}{subsection.5.2.1}%
-\contentsline {paragraph}{Cómo se calcula.}{16}{section*.3}%
-\contentsline {paragraph}{De dónde sale la climatología.}{16}{section*.4}%
+\contentsline {paragraph}{Cálculo de la anomalía de precipitación:}{16}{section*.3}%
+\contentsline {paragraph}{Construcción de la normal climatológica:}{16}{section*.4}%
 \contentsline {section}{\numberline {5.3}Predicción histórica}{17}{section.5.3}%
 \contentsline {section}{\numberline {5.4}Administración}{17}{section.5.4}%
 \contentsline {subsection}{\numberline {5.4.1}Carga y actualización de archivos Parquet}{18}{subsection.5.4.1}%
