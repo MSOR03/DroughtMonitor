@@ -2,8 +2,8 @@
 Servicio para consulta de datos de prediccion de sequia usando DuckDB.
 
 Consulta el parquet prediction_main (formato long) con columnas:
-ds, freq, date, cell_id, lon, lat, var, scale, value,
-conf_interp, conf_flag, n_used, neff, q1, q3, iqr_min, iqr_max, horizon
+ds, freq, date, cell_id, lon, lat, kind, var, source, scale, horizon,
+value, q1, q3, iqr_min, iqr_max, last_observed_date, created_at, n_contributors
 """
 import logging
 from datetime import date
