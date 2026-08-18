@@ -23,6 +23,10 @@ from app.api.v1.endpoints.prediction_schemas import (
     PredictionWatershedTimeSeriesRequest,
 )
 from app.api.v1.endpoints.historical_utils import orjson_response
+from app.api.v1.endpoints.admin_utils import (
+    is_prediction_dataset_key,
+    prediction_source_from_dataset_key,
+)
 from app.services.tiered_storage import _parse_meta, get_active_cloud_keys_for_dataset, encode_multi_keys
 
 router = APIRouter()
@@ -54,8 +58,55 @@ def _resolve_prediction_cloud_key(file_id: int, db) -> str:
     return file.cloud_key
 
 
+def _infer_source_from_hints(*hints: str) -> str:
+    """Infiere la fuente (CHIRPS/IMERG/ERA5_LAND) desde nombres/metadata."""
+    blob = " ".join(str(h or "") for h in hints).upper()
+    if "ERA5_LAND" in blob or "ERA5LAND" in blob or "ERA5-LAND" in blob:
+        return "ERA5_LAND"
+    if "IMERG" in blob:
+        return "IMERG"
+    if "CHIRPS" in blob:
+        return "CHIRPS"
+    if "ERA5" in blob:
+        return "ERA5"
+    return ""
+
+
+def _resolve_prediction_source(file_id: int, db) -> str:
+    """
+    Resuelve la fuente de una prediccion (CHIRPS / IMERG / ERA5_LAND).
+
+    Prioridad: dataset_key por fuente -> metadata data_source/source ->
+    inferencia por nombre de archivo. Fallback: CHIRPS.
+    """
+    file = db.query(ParquetFile).filter(
+        ParquetFile.id == file_id,
+        ParquetFile.status.in_(["active", "archived"]),
+    ).first()
+    if not file:
+        return "CHIRPS"
+
+    meta = _parse_meta(file.file_metadata)
+
+    by_key = prediction_source_from_dataset_key(meta.get("dataset_key"))
+    if by_key:
+        return by_key
+
+    direct = str(meta.get("data_source") or meta.get("source") or "").upper()
+    if direct in {"CHIRPS", "IMERG", "ERA5_LAND", "ERA5"}:
+        return direct
+
+    inferred = _infer_source_from_hints(
+        meta.get("dataset_key"),
+        file.filename,
+        file.original_filename,
+        file.cloud_key,
+    )
+    return inferred or "CHIRPS"
+
+
 def _is_current_prediction_file(file_id: int, db: Session) -> bool:
-    """True si corresponde al archivo activo de prediction_main."""
+    """True si corresponde a un archivo activo de prediccion (cualquier fuente)."""
     file = db.query(ParquetFile).filter(
         ParquetFile.id == file_id,
         ParquetFile.status.in_(["active", "archived"]),
@@ -64,7 +115,7 @@ def _is_current_prediction_file(file_id: int, db: Session) -> bool:
         return False
 
     meta = _parse_meta(file.file_metadata)
-    return str(meta.get("dataset_key") or "").lower() == "prediction_main"
+    return is_prediction_dataset_key(meta.get("dataset_key"))
 
 
 def _resolve_historical_cloud_key_for_prediction(file_id: int, db) -> str:
@@ -89,10 +140,15 @@ def _resolve_historical_cloud_key_for_prediction(file_id: int, db) -> str:
         return None
 
     _ = _parse_meta(file.file_metadata)
-    # Regla de negocio: la prediccion sale del parquet prediction_main,
-    # pero la climatologia para anomalia siempre se toma de CHIRPS historico.
-    source = "CHIRPS"
-    dataset_key = "historical_chirps"
+    # Regla de negocio: la climatologia para anomalia se toma del historico de la
+    # MISMA fuente que la prediccion (CHIRPS/IMERG/ERA5-Land).
+    source = _resolve_prediction_source(file_id, db)
+    dataset_key = {
+        "CHIRPS": "historical_chirps",
+        "IMERG": "historical_imerg",
+        "ERA5_LAND": "historical_era5_land",
+        "ERA5": "historical_era5",
+    }.get(source, "historical_chirps")
 
     def _infer_source_for_candidate(candidate: ParquetFile, candidate_meta: dict) -> str:
         """Infer source for legacy files where metadata is incomplete."""
@@ -199,14 +255,19 @@ def _resolve_prediction_issued_at(file_id: int, db) -> date | None:
 
 @router.get("/history/list", response_class=JSONResponse)
 def list_prediction_history(
+    source: str = None,
     db: Session = Depends(get_db),
 ):
     """
     Lista todas las predicciones disponibles (activas + archivadas)
-    con su fecha de emision (issued_at).
+    con su fecha de emision (issued_at) y su fuente (CHIRPS/IMERG/ERA5_LAND).
     Usado para el selector de historico de predicciones en el frontend.
+
+    ``source`` (opcional): filtra por fuente (CHIRPS, IMERG, ERA5_LAND).
     """
-    logger.info("GET /prediction/history/list")
+    logger.info("GET /prediction/history/list source=%s", source)
+
+    source_filter = str(source).upper() if source else None
 
     files = db.query(ParquetFile).filter(
         ParquetFile.status.in_(["active", "archived"]),
@@ -221,7 +282,11 @@ def list_prediction_history(
             except (json.JSONDecodeError, TypeError):
                 pass
 
-        if meta.get("dataset_key") != "prediction_main":
+        if not is_prediction_dataset_key(meta.get("dataset_key")):
+            continue
+
+        file_source = _resolve_prediction_source(f.id, db)
+        if source_filter and file_source != source_filter:
             continue
 
         issued_at = meta.get("issued_at")
@@ -235,6 +300,7 @@ def list_prediction_history(
             "file_id": f.id,
             "filename": f.original_filename or f.filename,
             "status": f.status,
+            "source": file_source,
             "issued_at": issued_at,
             "created_at": f.created_at.isoformat() if f.created_at else None,
             "is_current": f.status == "active",
@@ -274,8 +340,10 @@ def prediction_cells(
             detail="Archivo de prediccion no encontrado o sin cloud_key",
         )
 
+    source = _resolve_prediction_source(file_id, db)
+
     try:
-        result = _prediction_service.query_cells(parquet_url=cloud_key)
+        result = _prediction_service.query_cells(parquet_url=cloud_key, source=source)
         return orjson_response(result)
     except Exception as e:
         logger.error("Error obteniendo celdas de prediccion: %s", str(e))
@@ -428,6 +496,8 @@ def prediction_watershed_spatial(
     if request.zone_type not in ("cuenca", "municipio", "perimetro"):
         raise HTTPException(status_code=400, detail="zone_type debe ser cuenca, municipio o perimetro")
 
+    source = _resolve_prediction_source(request.parquet_file_id, db)
+
     try:
         result = _prediction_service.query_watershed_spatial(
             parquet_url=cloud_key,
@@ -435,6 +505,7 @@ def prediction_watershed_spatial(
             scale=request.scale,
             horizon=request.horizon,
             zone_type=request.zone_type,
+            source=source,
         )
         return orjson_response(result)
     except Exception as e:
@@ -474,6 +545,7 @@ def prediction_watershed_timeseries(
         raise HTTPException(status_code=400, detail="zone_type debe ser cuenca, municipio o perimetro")
 
     issued_at = _resolve_prediction_issued_at(request.parquet_file_id, db)
+    source = _resolve_prediction_source(request.parquet_file_id, db)
 
     try:
         result = _prediction_service.query_watershed_timeseries(
@@ -483,6 +555,7 @@ def prediction_watershed_timeseries(
             cuenca_dn=request.cuenca_dn,
             base_date=issued_at,
             zone_type=request.zone_type,
+            source=source,
         )
         return orjson_response(result)
     except Exception as e:

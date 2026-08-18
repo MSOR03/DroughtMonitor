@@ -707,12 +707,21 @@ class PredictionDataService:
     # ------------------------------------------------------------------
     # Celdas unicas del parquet de prediccion (para renderizar en el mapa)
     # ------------------------------------------------------------------
-    def query_cells(self, parquet_url: str) -> Dict[str, Any]:
+    # Resolucion (grados) por fuente para renderizar la grilla en el mapa.
+    _RESOLUTION_BY_SOURCE = {
+        "CHIRPS": 0.05,
+        "IMERG": 0.1,
+        "ERA5_LAND": 0.1,
+        "ERA5": 0.25,
+    }
+
+    def query_cells(self, parquet_url: str, source: str = "CHIRPS") -> Dict[str, Any]:
         """
         Retorna la lista de cell_ids unicos del parquet de prediccion.
-        Estas son las 297 celdas CHIRPS que se renderizan en el mapa.
+        Estas son las celdas de la fuente (CHIRPS 0.05°, IMERG/ERA5-Land 0.1°)
+        que se renderizan en el mapa.
         """
-        cache_key = f"pred:cells:{parquet_url}"
+        cache_key = f"pred:cells:{parquet_url}:{source}"
         cached = self.cache.get(cache_key)
         if cached:
             return cached
@@ -739,7 +748,7 @@ class PredictionDataService:
         result = {
             "cells": cells,
             "count": len(cells),
-            "resolution": 0.05,
+            "resolution": self._RESOLUTION_BY_SOURCE.get(str(source).upper(), 0.05),
         }
 
         self.cache.set(cache_key, result, expire=3600)
@@ -755,13 +764,15 @@ class PredictionDataService:
         scale: int,
         horizon: int,
         zone_type: str = "cuenca",
+        source: str = "CHIRPS",
     ) -> Dict[str, Any]:
         """
         Retorna las zonas con valor ponderado por area para un horizonte.
         ``zone_type``: cuenca (default), municipio o perimetro.
-        Solo usa celdas CHIRPS que intersectan con las zonas.
+        ``source``: fuente de la prediccion (CHIRPS/IMERG/ERA5_LAND); determina
+        que relaciones celda-zona se usan.
         """
-        cache_key = f"pred:ws_spatial:{parquet_url}:{var}:{scale}:{horizon}:{zone_type}"
+        cache_key = f"pred:ws_spatial:{parquet_url}:{var}:{scale}:{horizon}:{zone_type}:{source}"
         cached = self.cache.get(cache_key)
         if cached:
             return cached
@@ -771,7 +782,7 @@ class PredictionDataService:
         parquet_source = source_info["source_expr"]
 
         zone_names = get_zone_names(zone_type)
-        relations = get_zone_relations("CHIRPS", zone_type)
+        relations = get_zone_relations(source, zone_type)
         all_cell_ids = list({r["cell_id"] for r in relations})
         if not all_cell_ids:
             result = {"var": var, "scale": scale, "horizon": horizon, "cuencas": [], "statistics": {}}
@@ -870,14 +881,16 @@ class PredictionDataService:
         cuenca_dn: int,
         base_date: Optional[date] = None,
         zone_type: str = "cuenca",
+        source: str = "CHIRPS",
     ) -> Dict[str, Any]:
         """
         Retorna los 12 horizontes ponderados por area para una zona.
         ``zone_type``: cuenca (default), municipio o perimetro.
+        ``source``: fuente de la prediccion (CHIRPS/IMERG/ERA5_LAND).
         Incluye value, q1, q3, iqr_min, iqr_max.
         """
         base_tag = base_date.isoformat() if base_date else "na"
-        cache_key = f"pred:ws_ts:{parquet_url}:{var}:{scale}:{cuenca_dn}:{base_tag}:{zone_type}"
+        cache_key = f"pred:ws_ts:{parquet_url}:{var}:{scale}:{cuenca_dn}:{base_tag}:{zone_type}:{source}"
         cached = self.cache.get(cache_key)
         if cached:
             return cached
@@ -887,10 +900,10 @@ class PredictionDataService:
         parquet_source = source_info["source_expr"]
 
         zone_names = get_zone_names(zone_type)
-        relations = get_zone_relations("CHIRPS", zone_type)
+        relations = get_zone_relations(source, zone_type)
         cuenca_rels = [r for r in relations if r["dn"] == cuenca_dn]
         if not cuenca_rels:
-            raise ValueError(f"No hay relaciones para zona DN={cuenca_dn} ({zone_type}) con fuente CHIRPS")
+            raise ValueError(f"No hay relaciones para zona DN={cuenca_dn} ({zone_type}) con fuente {source}")
 
         cell_areas = {r["cell_id"]: r["area_m2"] for r in cuenca_rels}
         cell_list_sql = ", ".join(f"'{c}'" for c in cell_areas)

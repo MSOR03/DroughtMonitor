@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Header from '@/components/Header';
 import Sidebar from '@/components/Sidebar';
 import MapArea from '@/components/MapArea';
@@ -121,6 +121,7 @@ export default function Home() {
 
   // Prediction State
   const [predictionState, setPredictionState] = useState({
+    source: 'CHIRPS',         // 'CHIRPS' | 'IMERG' | 'ERA5_LAND'
     visualizationType: '1D',  // '1D' | '2D'
     spatialUnit: 'grid',      // 'grid' | 'cuencas'
     droughtIndex: '',
@@ -133,6 +134,7 @@ export default function Home() {
 
   // Prediction History State
   const [predictionHistoryState, setPredictionHistoryState] = useState({
+    source: 'CHIRPS',         // 'CHIRPS' | 'IMERG' | 'ERA5_LAND'
     selectedFileId: '',
     visualizationType: '1D',  // '1D' | '2D'
     spatialUnit: 'grid',      // 'grid' | 'cuencas'
@@ -192,32 +194,54 @@ export default function Home() {
     }
   }, [analysisState.spatialResolution]);
 
-  // Background: preload prediction CHIRPS cells on mount
-  // The 297 CHIRPS cells are the same for all prediction files, so load once from any available file
+  // Cache de celdas de prediccion por fuente (evita refetch al cambiar de fuente)
+  const predictionCellsCacheRef = useRef({});
+
+  // Resuelve el file_id de la prediccion ACTUAL (mas reciente activa) para una fuente.
+  const resolveCurrentPredictionFileId = useCallback(async (source) => {
+    const { predictionHistoryApi } = await import('@/services/api');
+    const list = await predictionHistoryApi.getList(source);
+    const current = list?.predictions?.find(p => p.is_current) || list?.predictions?.[0] || null;
+    return current?.file_id ?? null;
+  }, []);
+
+  // Carga las celdas de la fuente activa (segun la seccion abierta) para el mapa.
+  // Cada fuente tiene su propia grilla (CHIRPS 0.05°, IMERG/ERA5-Land 0.1°).
   useEffect(() => {
-    if (predictionCells) return;
+    if (!predictionOpen && !predictionHistoryOpen) return;
+    const activeSource = predictionHistoryOpen
+      ? (predictionHistoryState.source || 'CHIRPS')
+      : (predictionState.source || 'CHIRPS');
+
     let cancelled = false;
     async function loadPredictionCells() {
+      // Servir desde cache si ya la tenemos.
+      const cached = predictionCellsCacheRef.current[activeSource];
+      if (cached) {
+        setPredictionCells(cached);
+        return;
+      }
       try {
-        const { historicalApi, predictionApi } = await import('@/services/api');
-        const files = await historicalApi.getFiles();
-        const predFile = files.find(f => f.dataset_type === 'prediction');
-        if (!predFile || cancelled) return;
-        const result = await predictionApi.getCells(predFile.file_id);
-        if (!cancelled && result?.cells) {
-          setPredictionCells({
-            fileId: predFile.file_id,
-            cells: result.cells,
-            resolution: result.resolution || 0.05,
-          });
-        }
+        const { predictionApi } = await import('@/services/api');
+        const fileId = await resolveCurrentPredictionFileId(activeSource);
+        if (!fileId || cancelled) return;
+        const result = await predictionApi.getCells(fileId);
+        if (cancelled || !result?.cells) return;
+        const entry = {
+          source: activeSource,
+          fileId,
+          cells: result.cells,
+          resolution: result.resolution || (activeSource === 'CHIRPS' ? 0.05 : 0.1),
+        };
+        predictionCellsCacheRef.current[activeSource] = entry;
+        setPredictionCells(entry);
       } catch (err) {
         console.error('Error loading prediction cells:', err);
       }
     }
     loadPredictionCells();
     return () => { cancelled = true; };
-  }, [predictionCells]);
+  }, [predictionOpen, predictionHistoryOpen, predictionState.source, predictionHistoryState.source, resolveCurrentPredictionFileId]);
 
   // Handle Analysis Plot
   const handleAnalysisPlot = useCallback(async () => {
@@ -697,20 +721,20 @@ export default function Home() {
     try {
       showInfo(is2D ? 'Consultando prediccion espacial...' : 'Consultando prediccion temporal...', 'Cargando');
 
-      const { historicalApi, predictionApi } = await import('@/services/api');
+      const { predictionApi } = await import('@/services/api');
 
-      // Use cached prediction file ID if available, otherwise find it
-      let predFileId;
-      if (predictionCells?.fileId) {
-        predFileId = predictionCells.fileId;
-      } else {
-        const files = await historicalApi.getFiles();
-        const predFile = files.find(f => f.dataset_type === 'prediction');
-        if (!predFile) {
-          showError('No se encontro archivo de prediccion. Sube uno desde el panel admin con dataset_key "prediction_main".', 'Error');
-          return;
-        }
-        predFileId = predFile.file_id;
+      // Resolver el archivo de la prediccion ACTUAL para la fuente seleccionada.
+      const source = predictionState.source || 'CHIRPS';
+      const predResolution = (predictionCells?.source === source && predictionCells?.resolution)
+        ? predictionCells.resolution
+        : (source === 'CHIRPS' ? 0.05 : 0.1);
+      let predFileId = (predictionCells?.source === source) ? predictionCells.fileId : null;
+      if (!predFileId) {
+        predFileId = await resolveCurrentPredictionFileId(source);
+      }
+      if (!predFileId) {
+        showError(`No se encontro prediccion para la fuente ${source}. Sube una desde el panel de administracion.`, 'Error');
+        return;
       }
 
       if (is2D) {
@@ -733,7 +757,8 @@ export default function Home() {
             statistics: response.statistics,
             isCuencas: true,
             spatialUnit: predictionState.spatialUnit,
-            resolution: 0.05,
+            resolution: predResolution,
+            dataSource: source,
             predictionMeta: { index: predictionState.droughtIndex, scale: predictionState.scale, horizon: predictionState.horizon },
           });
 
@@ -764,7 +789,8 @@ export default function Home() {
             gridCells: response.grid_cells,
             statistics: response.statistics,
             bounds: response.bounds,
-            resolution: 0.05,
+            resolution: predResolution,
+            dataSource: source,
             predictionMeta: { index: predictionState.droughtIndex, scale: predictionState.scale, horizon: predictionState.horizon },
           });
 
@@ -831,7 +857,7 @@ export default function Home() {
       console.error('Error plotting prediction:', error);
       showError(error.message || 'Error al consultar prediccion', 'Error en la consulta');
     }
-  }, [predictionState, predictionCells, selectedCell, selectedEntity, showError, showWarning, showInfo, showSuccess]);
+  }, [predictionState, predictionCells, selectedCell, selectedEntity, resolveCurrentPredictionFileId, showError, showWarning, showInfo, showSuccess]);
 
   const handlePredictionAnomalyPlot = useCallback(async () => {
     const is2D = predictionState.visualizationType === '2D';
@@ -856,19 +882,19 @@ export default function Home() {
     try {
       showInfo('Consultando mapas 2D de media y anomalia...', 'Cargando');
 
-      const { historicalApi, predictionApi } = await import('@/services/api');
+      const { predictionApi } = await import('@/services/api');
 
-      let predFileId;
-      if (predictionCells?.fileId) {
-        predFileId = predictionCells.fileId;
-      } else {
-        const files = await historicalApi.getFiles();
-        const predFile = files.find(f => f.dataset_type === 'prediction');
-        if (!predFile) {
-          showError('No se encontro archivo de prediccion.', 'Error');
-          return;
-        }
-        predFileId = predFile.file_id;
+      const source = predictionState.source || 'CHIRPS';
+      const predResolution = (predictionCells?.source === source && predictionCells?.resolution)
+        ? predictionCells.resolution
+        : (source === 'CHIRPS' ? 0.05 : 0.1);
+      let predFileId = (predictionCells?.source === source) ? predictionCells.fileId : null;
+      if (!predFileId) {
+        predFileId = await resolveCurrentPredictionFileId(source);
+      }
+      if (!predFileId) {
+        showError(`No se encontro prediccion para la fuente ${source}.`, 'Error');
+        return;
       }
 
       const response = await predictionApi.getSpatialData({
@@ -964,7 +990,8 @@ export default function Home() {
         gridCells: rightAnomalyCells,
         statistics: anomalyStats,
         bounds: response.bounds,
-        resolution: 0.05,
+        resolution: predResolution,
+        dataSource: source,
         dualSpatialMaps: {
           left: {
             title: 'MEDIA DE PRECIPITACIÓN 1991-2020 (mm)',
@@ -996,7 +1023,7 @@ export default function Home() {
       console.error('Error plotting prediction anomaly dual:', error);
       showError(error.message || 'Error al consultar anomalia 2D', 'Error en la consulta');
     }
-  }, [predictionState, predictionCells, showError, showWarning, showInfo, showSuccess]);
+  }, [predictionState, predictionCells, resolveCurrentPredictionFileId, showError, showWarning, showInfo, showSuccess]);
 
   // Handle AI Summary
   const handleAiSummary = useCallback(async () => {
@@ -1126,6 +1153,10 @@ export default function Home() {
 
       const { predictionHistoryApi } = await import('@/services/api');
       const predFileId = Number(predictionHistoryState.selectedFileId);
+      const histSource = predictionHistoryState.source || 'CHIRPS';
+      const predResolution = (predictionCells?.source === histSource && predictionCells?.resolution)
+        ? predictionCells.resolution
+        : (histSource === 'CHIRPS' ? 0.05 : 0.1);
 
       if (is2D) {
         if (isCuencas) {
@@ -1147,7 +1178,8 @@ export default function Home() {
             statistics: response.statistics,
             isCuencas: true,
             spatialUnit: predictionHistoryState.spatialUnit,
-            resolution: 0.05,
+            resolution: predResolution,
+            dataSource: histSource,
             predictionMeta: {
               index: predictionHistoryState.droughtIndex,
               scale: predictionHistoryState.scale,
@@ -1184,7 +1216,8 @@ export default function Home() {
             gridCells: response.grid_cells,
             statistics: response.statistics,
             bounds: response.bounds,
-            resolution: 0.05,
+            resolution: predResolution,
+            dataSource: histSource,
             predictionMeta: {
               index: predictionHistoryState.droughtIndex,
               scale: predictionHistoryState.scale,
@@ -1269,7 +1302,7 @@ export default function Home() {
       console.error('Error plotting prediction history:', error);
       showError(error.message || 'Error al consultar prediccion historica', 'Error en la consulta');
     }
-  }, [predictionHistoryState, selectedCell, selectedEntity, showError, showWarning, showInfo, showSuccess]);
+  }, [predictionHistoryState, predictionCells, selectedCell, selectedEntity, showError, showWarning, showInfo, showSuccess]);
 
   // Handle Reset
   const handleReset = useCallback(() => {
@@ -1419,13 +1452,12 @@ export default function Home() {
         const index = plotData.predictionMeta?.index || predictionState.droughtIndex;
         const scale = plotData.predictionMeta?.scale || predictionState.scale;
 
-        // Use cached prediction file ID
-        let predFileId = predictionCells?.fileId;
+        // Resolver el archivo de prediccion actual para la fuente seleccionada.
+        const source = predictionState.source || 'CHIRPS';
+        let predFileId = (predictionCells?.source === source) ? predictionCells.fileId : null;
         if (!predFileId) {
-          const files = await historicalApi.getFiles();
-          const predFile = files.find(f => f.dataset_type === 'prediction');
-          if (!predFile) { showError('No se encontro archivo de prediccion', 'Error'); return; }
-          predFileId = predFile.file_id;
+          predFileId = await resolveCurrentPredictionFileId(source);
+          if (!predFileId) { showError(`No se encontro prediccion para la fuente ${source}`, 'Error'); return; }
         }
 
         showInfo(`Consultando prediccion 1D para celda ${cellId}...`, 'Cargando');
@@ -1438,13 +1470,14 @@ export default function Home() {
         });
 
         // Update selected cell visually
-        const halfRes = 0.05 / 2;
+        const cellRes = plotData.resolution || (source === 'CHIRPS' ? 0.05 : 0.1);
+        const halfRes = cellRes / 2;
         setSelectedCell({
           id: cellId,
           cell_id: cellId,
           center: [cell.lat, cell.lon],
           bounds: [[cell.lat - halfRes, cell.lon - halfRes], [cell.lat + halfRes, cell.lon + halfRes]],
-          resolution: 0.05,
+          resolution: cellRes,
           lat: cell.lat,
           lon: cell.lon,
         });
@@ -1486,13 +1519,14 @@ export default function Home() {
         });
 
         // Update selected cell visually
-        const halfRes = 0.05 / 2;
+        const cellRes = plotData.resolution || (predictionHistoryState.source === 'CHIRPS' ? 0.05 : 0.1);
+        const halfRes = cellRes / 2;
         setSelectedCell({
           id: cellId,
           cell_id: cellId,
           center: [cell.lat, cell.lon],
           bounds: [[cell.lat - halfRes, cell.lon - halfRes], [cell.lat + halfRes, cell.lon + halfRes]],
-          resolution: 0.05,
+          resolution: cellRes,
           lat: cell.lat,
           lon: cell.lon,
         });
@@ -1663,7 +1697,7 @@ export default function Home() {
       console.error('Error in spatial cell click -> 1D:', error);
       showError(error.message || 'Error al consultar datos 1D', 'Error');
     }
-  }, [plotData, predictionState, predictionHistoryState, predictionCells, analysisState, showError, showWarning, showInfo, showSuccess]);
+  }, [plotData, predictionState, predictionHistoryState, predictionCells, analysisState, resolveCurrentPredictionFileId, showError, showWarning, showInfo, showSuccess]);
 
   return (
     <div className="flex flex-col h-screen bg-linear-to-br from-blue-50/30 via-blue-50/20 to-blue-50/20 dark:from-[#0f1419] dark:via-[#0a0e13] dark:to-[#0f1419] p-4">

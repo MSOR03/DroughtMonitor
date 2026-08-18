@@ -84,9 +84,12 @@ DATASET_CONFIG: Dict[str, Dict[str, Any]] = {
             "Cada mes se reescribe el archivo completo (~0.7 MB)"
         ),
     },
+    # prediction_main = alias historico de la prediccion CHIRPS (compatibilidad
+    # con archivos ya subidos con esta clave). Nuevos archivos deberian usar la
+    # clave por fuente (prediction_chirps / prediction_imerg / prediction_era5_land).
     "prediction_main": {
         "dataset_type": "prediction",
-        "source": "MULTI_SOURCE",
+        "source": "CHIRPS",
         "allowed_roles": ["prediction_monthly"],
         "update_strategy": "single_file",
         "update_guide": (
@@ -96,7 +99,63 @@ DATASET_CONFIG: Dict[str, Dict[str, Any]] = {
             "Reemplaza la prediccion anterior directamente"
         ),
     },
+    "prediction_chirps": {
+        "dataset_type": "prediction",
+        "source": "CHIRPS",
+        "allowed_roles": ["prediction_monthly"],
+        "update_strategy": "single_file",
+        "update_guide": (
+            "1. Subir prediccion mensual CHIRPS (0.05°)\n"
+            "2. POST /datasets/attach-file con role=prediction_monthly y "
+            "activate_now=true\n"
+            "Reemplaza la prediccion CHIRPS anterior directamente"
+        ),
+    },
+    "prediction_imerg": {
+        "dataset_type": "prediction",
+        "source": "IMERG",
+        "allowed_roles": ["prediction_monthly"],
+        "update_strategy": "single_file",
+        "update_guide": (
+            "1. Subir prediccion mensual IMERG (0.1°)\n"
+            "2. POST /datasets/attach-file con role=prediction_monthly y "
+            "activate_now=true\n"
+            "Reemplaza la prediccion IMERG anterior directamente"
+        ),
+    },
+    "prediction_era5_land": {
+        "dataset_type": "prediction",
+        "source": "ERA5_LAND",
+        "allowed_roles": ["prediction_monthly"],
+        "update_strategy": "single_file",
+        "update_guide": (
+            "1. Subir prediccion mensual ERA5-Land (0.1°)\n"
+            "2. POST /datasets/attach-file con role=prediction_monthly y "
+            "activate_now=true\n"
+            "Reemplaza la prediccion ERA5-Land anterior directamente"
+        ),
+    },
 }
+
+
+# Predicciones: mapeo dataset_key -> fuente de datos (para climatologia y
+# relaciones cuenca-celda). prediction_main es la CHIRPS historica.
+PREDICTION_DATASET_KEYS: Dict[str, str] = {
+    "prediction_main": "CHIRPS",
+    "prediction_chirps": "CHIRPS",
+    "prediction_imerg": "IMERG",
+    "prediction_era5_land": "ERA5_LAND",
+}
+
+
+def is_prediction_dataset_key(dataset_key: Optional[str]) -> bool:
+    """True si la clave corresponde a un dataset de prediccion (cualquier fuente)."""
+    return str(dataset_key or "").lower() in PREDICTION_DATASET_KEYS
+
+
+def prediction_source_from_dataset_key(dataset_key: Optional[str]) -> Optional[str]:
+    """Retorna la fuente (CHIRPS/IMERG/ERA5_LAND) para una clave de prediccion."""
+    return PREDICTION_DATASET_KEYS.get(str(dataset_key or "").lower())
 
 
 # ---------------------------------------------------------------------------
@@ -453,8 +512,10 @@ def _choose_dedup_keys(columns: List[str], dataset_key: str) -> List[str]:
     """Pick best available dedup keys based on known schemas and dataset."""
     cols = set(columns)
 
-    if dataset_key == "prediction_main":
+    if is_prediction_dataset_key(dataset_key):
         candidates = [
+            # Formato long real de prediccion (una metrica por fila).
+            ["date", "cell_id", "var", "scale", "horizon"],
             ["issue_date", "source_model", "horizon_months", "drought_index", "cell_id"],
             ["issue_date", "source_model", "horizon_months", "drought_index", "station_id"],
             ["issue_date", "source", "horizon", "index", "cell_id"],

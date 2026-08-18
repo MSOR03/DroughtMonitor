@@ -24,7 +24,7 @@ import {
 import { filesApi } from '@/services/adminApi';
 import { useModal } from '@/contexts/ModalContext';
 import Badge from '@/components/admin/dashboard/Badge';
-import { classifyFile, formatBytes, formatDate } from '@/components/admin/dashboard/helpers';
+import { classifyFile, formatBytes, formatDate, inferDatasetKeyFromFilename } from '@/components/admin/dashboard/helpers';
 
 export default function FilesSection() {
   const { showDangerConfirm } = useModal();
@@ -220,7 +220,7 @@ export default function FilesSection() {
       return;
     }
     if (selected.dataset_type === 'prediction') {
-      setError('prediction_main no usa merge-and-rollover; usa Adjuntar + Activar.');
+      setError('Los datasets de predicción no usan merge-and-rollover; usa Adjuntar + Activar.');
       return;
     }
     if (!selectedFileId) {
@@ -259,6 +259,16 @@ export default function FilesSection() {
   const selectedDataset = datasetCatalog.find((d) => d.dataset_key === selectedDatasetKey) || null;
   const availableRoles = selectedDataset?.allowed_roles || [];
   const candidateFiles = files.filter((f) => f.status !== 'archived');
+
+  // Al seleccionar un archivo, auto-selecciona el dataset_key inferido del nombre
+  // (ej. "prediction_imerg_*.parquet" -> prediction_imerg) para evitar mismatches.
+  const handleSelectFile = useCallback((fileId) => {
+    setSelectedFileId(fileId);
+    if (!fileId) return;
+    const file = files.find((f) => String(f.id) === String(fileId));
+    const inferredKey = inferDatasetKeyFromFilename(file?.original_filename, datasetCatalog);
+    if (inferredKey) setSelectedDatasetKey(inferredKey);
+  }, [files, datasetCatalog]);
 
   const stats = [
     {
@@ -331,7 +341,7 @@ export default function FilesSection() {
         setSelectedDatasetKey={setSelectedDatasetKey}
         candidateFiles={candidateFiles}
         selectedFileId={selectedFileId}
-        setSelectedFileId={setSelectedFileId}
+        setSelectedFileId={handleSelectFile}
         availableRoles={availableRoles}
         selectedRole={selectedRole}
         setSelectedRole={setSelectedRole}
@@ -464,6 +474,13 @@ function DatasetWorkflowCard({
 }) {
   const isPredictionDataset = selectedDataset?.dataset_type === 'prediction';
 
+  // Fuente inferida del archivo seleccionado (para confirmar/advertir el dataset).
+  const selectedFile = candidateFiles.find((f) => String(f.id) === String(selectedFileId));
+  const inferredKey = selectedFile
+    ? inferDatasetKeyFromFilename(selectedFile.original_filename, datasetCatalog)
+    : null;
+  const inferredMismatch = inferredKey && selectedDatasetKey && inferredKey !== selectedDatasetKey;
+
   return (
     <div className="ds-card" style={{ borderTop: '3px solid #f97316' }}>
       <div className="ds-card-header">
@@ -506,6 +523,17 @@ function DatasetWorkflowCard({
                 </option>
               ))}
             </select>
+            {inferredKey && !inferredMismatch && (
+              <p style={{ margin: '0.4rem 0 0', fontSize: '0.75rem', color: '#16a34a' }}>
+                ✓ Dataset detectado por el nombre: <strong>{inferredKey}</strong>
+              </p>
+            )}
+            {inferredMismatch && (
+              <p style={{ margin: '0.4rem 0 0', fontSize: '0.75rem', color: '#d97706' }}>
+                ⚠ El archivo parece ser <strong>{inferredKey}</strong>, pero el dataset seleccionado
+                es <strong>{selectedDatasetKey}</strong>. Verifica la fuente antes de adjuntar.
+              </p>
+            )}
           </div>
 
           <div>

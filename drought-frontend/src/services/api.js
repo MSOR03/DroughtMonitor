@@ -586,9 +586,11 @@ export const predictionApi = {
  * Prediction History API
  */
 export const predictionHistoryApi = {
-  // Listar todas las predicciones disponibles con fecha de emision
-  getList: async () => {
-    return fetchApi('/prediction/history/list');
+  // Listar todas las predicciones disponibles con fecha de emision.
+  // ``source`` (opcional): filtra por fuente (CHIRPS, IMERG, ERA5_LAND).
+  getList: async (source) => {
+    const params = source ? `?source=${encodeURIComponent(source)}` : '';
+    return fetchApi(`/prediction/history/list${params}`);
   },
 
   // Celdas unicas de un archivo de prediccion historico

@@ -88,6 +88,11 @@ export default function MapArea({
     return parseCellIds(predictionCells.cells, predictionCells.resolution || 0.05);
   }, [showPredictionCells, predictionCells]);
 
+  // Etiqueta de fuente de la prediccion (CHIRPS / IMERG / ERA5-Land)
+  const predictionSourceLabel = predictionCells?.source === 'ERA5_LAND'
+    ? 'ERA5-Land'
+    : (predictionCells?.source || 'CHIRPS');
+
   const dualGridCells = useMemo(() => {
     if (!dualSpatialMaps?.left?.gridCells?.length) return null;
     const dualCellIds = dualSpatialMaps.left.gridCells
@@ -196,7 +201,7 @@ export default function MapArea({
               <div className="flex items-center gap-2 px-3 py-1 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 rounded-lg border border-blue-200 dark:border-blue-700">
                 <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Nivel:</span>
                 <span className="text-sm font-bold text-blue-700 dark:text-blue-300">
-                  {predictionGridCells ? 'CHIRPS (Prediccion)' : formatLevelLabel(gridNav.currentLevel)}
+                  {predictionGridCells ? `${predictionSourceLabel} (Prediccion)` : formatLevelLabel(gridNav.currentLevel)}
                 </span>
                 <span className="text-xs text-gray-500 dark:text-gray-400">
                   ({effectiveGridCells.length} celdas)
@@ -679,7 +684,7 @@ export default function MapArea({
                   <div>
                     <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">INFORMACIÓN DE CONSULTA</h4>
                     <p className="text-xs text-gray-600 dark:text-gray-400 mb-4">
-                      Las 297 celdas CHIRPS muestran la predicción de <strong>{plotData.variable}</strong> para el horizonte seleccionado.
+                      Las celdas {predictionSourceLabel} muestran la predicción de <strong>{plotData.variable}</strong> para el horizonte seleccionado.
                       Los colores representan las categorías de sequía.
                       <span className={`font-medium ${plotData.type === 'prediction-history-2d' ? 'text-purple-600 dark:text-purple-400' : 'text-green-600 dark:text-green-400'}`}> Haz click en una celda para ver el detalle 1D.</span>
                     </p>

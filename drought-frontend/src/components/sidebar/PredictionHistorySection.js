@@ -6,6 +6,13 @@ import Select from '../ui/Select';
 import Button from '../ui/Button';
 import { CollapsiblePanel, RadioCard, RadioOption, StepSection } from './primitives';
 
+// Fuentes de prediccion disponibles (cada una es un archivo/parquet independiente)
+const PREDICTION_SOURCES = [
+  { value: 'CHIRPS', label: 'CHIRPS', description: 'Satélite (0.05°)' },
+  { value: 'IMERG', label: 'IMERG', description: 'Satélite (0.1°)' },
+  { value: 'ERA5_LAND', label: 'ERA5-Land', description: 'Reanálisis (0.1°)' },
+];
+
 const PREDICTION_INDICES = [
   { value: 'SPI', label: 'SPI - Indice de Precipitacion Estandarizado' },
   { value: 'SPEI', label: 'SPEI - Indice de Precipitacion-Evapotranspiracion' },
@@ -27,16 +34,17 @@ export default function PredictionHistorySection({
 }) {
   const [predictionFiles, setPredictionFiles] = useState([]);
   const [loadingFiles, setLoadingFiles] = useState(false);
+  const source = predictionHistoryState.source || 'CHIRPS';
 
-  // Load prediction history files when section opens
+  // Load prediction history files when section opens or the source changes
   useEffect(() => {
-    if (!predictionHistoryOpen || predictionFiles.length > 0) return;
+    if (!predictionHistoryOpen) return;
     let cancelled = false;
     async function loadFiles() {
       setLoadingFiles(true);
       try {
         const { predictionHistoryApi } = await import('@/services/api');
-        const result = await predictionHistoryApi.getList();
+        const result = await predictionHistoryApi.getList(source);
         if (!cancelled && result?.predictions) {
           setPredictionFiles(result.predictions);
         }
@@ -48,13 +56,13 @@ export default function PredictionHistorySection({
     }
     loadFiles();
     return () => { cancelled = true; };
-  }, [predictionHistoryOpen, predictionFiles.length]);
+  }, [predictionHistoryOpen, source]);
 
   const handleRefreshFiles = async () => {
     setLoadingFiles(true);
     try {
       const { predictionHistoryApi } = await import('@/services/api');
-      const result = await predictionHistoryApi.getList();
+      const result = await predictionHistoryApi.getList(source);
       if (result?.predictions) {
         setPredictionFiles(result.predictions);
       }
@@ -104,8 +112,25 @@ export default function PredictionHistorySection({
       <div className="space-y-5 p-5 bg-gradient-to-br from-purple-50/50 via-purple-50/20 to-purple-50/30 dark:from-[#1a1f2e] dark:via-[#141920] dark:to-purple-950/10 rounded-2xl border border-purple-200/50 dark:border-purple-900/30 shadow-lg">
         <div className="space-y-6">
 
-          {/* Step 1: Fecha de emision (Select prediction file) */}
-          <StepSection step={1} title="Fecha de emision" color="purple" collapsible defaultOpen>
+          {/* Step 1: Data Source */}
+          <StepSection step={1} title="Fuente de datos" color="purple" collapsible defaultOpen>
+            <div className="grid grid-cols-3 gap-2">
+              {PREDICTION_SOURCES.map((s) => (
+                <RadioCard
+                  key={s.value}
+                  name="predHistSource"
+                  value={s.value}
+                  checked={source === s.value}
+                  onChange={() => setPredictionHistoryState((prev) => ({ ...prev, source: s.value, selectedFileId: '' }))}
+                  label={s.label}
+                  badge={s.description}
+                />
+              ))}
+            </div>
+          </StepSection>
+
+          {/* Step 2: Fecha de emision (Select prediction file) */}
+          <StepSection step={2} title="Fecha de emision" color="purple" collapsible defaultOpen>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
@@ -141,8 +166,8 @@ export default function PredictionHistorySection({
             </div>
           </StepSection>
 
-          {/* Step 2: Visualization Type */}
-          <StepSection step={2} title="Tipo de visualizacion" color="purple" collapsible defaultOpen>
+          {/* Step 3: Visualization Type */}
+          <StepSection step={3} title="Tipo de visualizacion" color="purple" collapsible defaultOpen>
             <div className="grid grid-cols-2 gap-2">
               <RadioOption
                 name="predHistVisType"
@@ -159,14 +184,14 @@ export default function PredictionHistorySection({
                 checked={is2D}
                 onChange={() => setPredictionHistoryState((prev) => ({ ...prev, visualizationType: '2D' }))}
                 label="2D Mapa"
-                description={isCuencas ? `Agregado por ${zonalNoun}` : '297 celdas CHIRPS'}
+                description={isCuencas ? `Agregado por ${zonalNoun}` : `Celdas ${source === 'CHIRPS' ? 'CHIRPS (0.05°)' : source === 'IMERG' ? 'IMERG (0.1°)' : 'ERA5-Land (0.1°)'}`}
                 icon={MapIcon}
               />
             </div>
           </StepSection>
 
-          {/* Step 2.5: Spatial Unit (Celdas / Cuencas) */}
-          <StepSection step={3} title="Unidad espacial" color="purple" collapsible defaultOpen={false}>
+          {/* Step 4: Spatial Unit (Celdas / Cuencas) */}
+          <StepSection step={4} title="Unidad espacial" color="purple" collapsible defaultOpen={false}>
             <div className="space-y-2">
               <RadioOption
                 name="predHistSpatialUnit"
@@ -203,8 +228,8 @@ export default function PredictionHistorySection({
             </div>
           </StepSection>
 
-          {/* Step 4: Drought Index */}
-          <StepSection step={4} title="Indice de sequia" color="purple" collapsible defaultOpen>
+          {/* Step 5: Drought Index */}
+          <StepSection step={5} title="Indice de sequia" color="purple" collapsible defaultOpen>
             <Select
               label="Seleccionar indice"
               options={PREDICTION_INDICES}
@@ -214,8 +239,8 @@ export default function PredictionHistorySection({
             />
           </StepSection>
 
-          {/* Step 5: Scale */}
-          <StepSection step={5} title="Nivel de Agregación" color="purple" collapsible defaultOpen={false}>
+          {/* Step 6: Scale */}
+          <StepSection step={6} title="Nivel de Agregación" color="purple" collapsible defaultOpen={false}>
             <div className="grid grid-cols-4 gap-2">
               {SCALES.map((s) => (
                 <RadioCard
@@ -231,9 +256,9 @@ export default function PredictionHistorySection({
             </div>
           </StepSection>
 
-          {/* Step 6: Horizon (only 2D) */}
+          {/* Step 7: Horizon (only 2D) */}
           {is2D && (
-            <StepSection step={6} title="Horizonte de prediccion" color="purple" collapsible defaultOpen>
+            <StepSection step={7} title="Horizonte de prediccion" color="purple" collapsible defaultOpen>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-gray-500 dark:text-gray-400">
