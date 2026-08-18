@@ -198,7 +198,7 @@ def rollover_dataset_monthly(
     if dataset_cfg["dataset_type"] == "prediction":
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="prediction_main no usa rollover snapshot; usa attach-file con role=prediction_monthly y activate_now=true",
+            detail="Los datasets de prediccion no usan rollover snapshot; usa attach-file con role=prediction_monthly y activate_now=true",
         )
 
     new_file = db.query(ParquetFile).filter(ParquetFile.id == payload.new_snapshot_file_id).first()
@@ -334,7 +334,7 @@ def merge_and_rollover_dataset(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=(
-                "prediction_main no requiere merge con snapshot gigante. "
+                "Los datasets de prediccion no requieren merge con snapshot gigante. "
                 "Usa /admin/datasets/attach-file con role=prediction_monthly y activate_now=true."
             ),
         )

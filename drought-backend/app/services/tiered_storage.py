@@ -62,6 +62,18 @@ TIERED_STORAGE_CONFIG: Dict[str, Dict[str, Any]] = {
         "strategy": "single_file",
         "size_tier": "small",
     },
+    "prediction_chirps": {
+        "strategy": "single_file",
+        "size_tier": "small",
+    },
+    "prediction_imerg": {
+        "strategy": "single_file",
+        "size_tier": "small",
+    },
+    "prediction_era5_land": {
+        "strategy": "single_file",
+        "size_tier": "small",
+    },
 }
 
 # Roles validos para cada estrategia

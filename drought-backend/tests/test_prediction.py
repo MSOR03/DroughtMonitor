@@ -72,6 +72,44 @@ def prediction_file_id():
     db2.close()
 
 
+@pytest.fixture(scope="module")
+def imerg_prediction_file_id():
+    """Registra una prediccion etiquetada como IMERG (dataset_key=prediction_imerg)."""
+    from tests.conftest import _populate_parquet_cache
+    from app.models.parquet_file import ParquetFile
+
+    _populate_parquet_cache(SAMPLE_PREDICTION_PARQUET)
+
+    db: Session = TestingSessionLocal()
+    meta = json.dumps({
+        "resolution": 0.1,
+        "dataset_type": "prediction",
+        "dataset_key": "prediction_imerg",
+        "num_rows": 360,
+    })
+    pf = ParquetFile(
+        filename="prediction_imerg_sample.parquet",
+        original_filename="prediction_imerg_sample.parquet",
+        file_size=os.path.getsize(SAMPLE_PREDICTION_PARQUET),
+        cloud_url=SAMPLE_PREDICTION_PARQUET,
+        cloud_key=SAMPLE_PREDICTION_PARQUET,
+        file_metadata=meta,
+        status="active",
+    )
+    db.add(pf)
+    db.commit()
+    db.refresh(pf)
+    pred_id = pf.id
+    db.close()
+    yield pred_id
+    db2: Session = TestingSessionLocal()
+    existing = db2.query(ParquetFile).filter(ParquetFile.id == pred_id).first()
+    if existing:
+        db2.delete(existing)
+        db2.commit()
+    db2.close()
+
+
 # ─────────────────────────────────────────────────────────
 # LISTADO HISTÓRICO DE PREDICCIONES
 # ─────────────────────────────────────────────────────────
@@ -91,6 +129,60 @@ class TestPredictionHistoryList:
         data = client.get("/api/v1/prediction/history/list").json()
         for item in data["predictions"]:
             assert "file_id" in item
+            assert "source" in item
+
+    def test_list_reports_chirps_source_for_prediction_main(self, client, prediction_file_id):
+        data = client.get("/api/v1/prediction/history/list").json()
+        item = next(p for p in data["predictions"] if p["file_id"] == prediction_file_id)
+        assert item["source"] == "CHIRPS"
+
+    def test_list_source_filter_matches(self, client, prediction_file_id):
+        data = client.get("/api/v1/prediction/history/list?source=CHIRPS").json()
+        assert any(p["file_id"] == prediction_file_id for p in data["predictions"])
+
+    def test_list_source_filter_excludes_other_sources(self, client, prediction_file_id):
+        data = client.get("/api/v1/prediction/history/list?source=IMERG").json()
+        assert all(p["source"] == "IMERG" for p in data["predictions"])
+        assert not any(p["file_id"] == prediction_file_id for p in data["predictions"])
+
+    def test_imerg_prediction_reports_imerg_source(self, client, imerg_prediction_file_id):
+        data = client.get("/api/v1/prediction/history/list?source=IMERG").json()
+        item = next(p for p in data["predictions"] if p["file_id"] == imerg_prediction_file_id)
+        assert item["source"] == "IMERG"
+
+    def test_imerg_prediction_cells_use_01_resolution(self, client, imerg_prediction_file_id):
+        data = client.get(f"/api/v1/prediction/cells/{imerg_prediction_file_id}").json()
+        assert data["resolution"] == 0.1
+
+
+# ─────────────────────────────────────────────────────────
+# RESOLUCIÓN DE FUENTE (multi-source)
+# ─────────────────────────────────────────────────────────
+
+class TestPredictionSourceConfig:
+    def test_dataset_config_has_per_source_prediction_keys(self):
+        from app.api.v1.endpoints.admin_utils import DATASET_CONFIG
+        for key in ("prediction_chirps", "prediction_imerg", "prediction_era5_land"):
+            assert key in DATASET_CONFIG
+            assert DATASET_CONFIG[key]["dataset_type"] == "prediction"
+
+    def test_tiered_config_has_per_source_prediction_keys(self):
+        from app.services.tiered_storage import TIERED_STORAGE_CONFIG
+        for key in ("prediction_chirps", "prediction_imerg", "prediction_era5_land"):
+            assert key in TIERED_STORAGE_CONFIG
+
+    def test_source_from_dataset_key(self):
+        from app.api.v1.endpoints.admin_utils import (
+            prediction_source_from_dataset_key,
+            is_prediction_dataset_key,
+        )
+        assert prediction_source_from_dataset_key("prediction_main") == "CHIRPS"
+        assert prediction_source_from_dataset_key("prediction_chirps") == "CHIRPS"
+        assert prediction_source_from_dataset_key("prediction_imerg") == "IMERG"
+        assert prediction_source_from_dataset_key("prediction_era5_land") == "ERA5_LAND"
+        assert prediction_source_from_dataset_key("historical_chirps") is None
+        assert is_prediction_dataset_key("prediction_imerg")
+        assert not is_prediction_dataset_key("hydro_main")
 
 
 # ─────────────────────────────────────────────────────────
